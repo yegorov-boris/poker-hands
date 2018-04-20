@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	//"bufio"
+	"bufio"
 )
 
 func main() {
-	const chunkSize = 10
+	const maxChunkSize = 10
 
 	resp, errGet := http.Get("https://projecteuler.net/project/resources/p054_poker.txt")
 	if errGet != nil {
@@ -22,28 +22,34 @@ func main() {
 
 	defer resp.Body.Close()
 
-	//var i = 0;
-	//scanner := bufio.NewScanner(resp.Body)
-	//for scanner.Scan() {
-	//	fmt.Println(scanner.Text())
-	//	i++
-	//	if (i == chunkSize) {
-	//		fmt.Println("------------")
-	//		i = 0
-	//	}
-	//}
+	var inputs [maxChunkSize]chan string
+	var outputs [maxChunkSize]chan bool
 
-	var inputs [chunkSize]chan string
-	var outputs [chunkSize]chan bool
 	for i := range inputs {
 		inputs[i] = make(chan string)
 		outputs[i] = make(chan bool)
 		createChecker(inputs[i], outputs[i]);
-		inputs[i] <- "foo"
 	}
 
-	for i := range inputs {
-		fmt.Println(<- outputs[i])
+	scanner := bufio.NewScanner(resp.Body)
+	var notEof = true
+
+	for notEof {
+		var currentChunkSize = 0;
+
+		for i := range inputs {
+			if !scanner.Scan() {
+				notEof = false
+				break
+			}
+
+			inputs[i] <- scanner.Text()
+			currentChunkSize++
+		}
+
+		for i := 0; i < currentChunkSize; i++ {
+			fmt.Println(<- outputs[i])
+		}
 	}
 }
 

@@ -8,8 +8,9 @@ import (
 
 //const maxChunkSize = 10
 //const url = "https://projecteuler.net/project/resources/p054_poker.txt"
-const cardValues = "2 3 4 5 6 7 8 9 T J Q K A"
-var suits = "D C H S"
+const cardValues = "A K Q J T 9 8 7 6 5 4 3 2"
+const suits = "D C H S"
+const separator = " "
 //var cardValues = [13]string {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
 //var suits = [4]string {"D", "C", "H", "S"}
 
@@ -64,14 +65,14 @@ type Hand [5]Card
 //}
 
 func main() {
-	isFirstPlayerWinner("JH QH TH AH KH 2C 3S 8S 8D TD")
+	isFirstPlayerWinner("JH QH TH AH KH 2C 3C 4C 5C 6C")
 }
 
 //func createChecker(input chan string, output chan bool) {
 //	go func() {
 //		for {
 //			hands := <- input
-//			output <- (hands == "foo")
+//			output <- isFirstPlayerWinner(hands)
 //		}
 //	}()
 //}
@@ -80,36 +81,54 @@ func isFirstPlayerWinner(hands string) bool {
 	first, second := parseHands(hands)
 
 	fmt.Print(isRoyalFlush(first))
-	fmt.Print(second)
+	fmt.Print(isStraightFlush(second))
 
 	return false
 }
 
 func isRoyalFlush(hand Hand) bool {
-	for _, card := range hand {
-		if card.Suit != hand[0].Suit {
-			return false;
+	if !isSameSuit(hand[:]) {
+		return false
+	}
+
+	values := [5]string {"A", "K", "Q", "J", "T"}
+
+	for i, value := range values {
+		if hand[i].Value != value {
+			return false
 		}
 	}
 
-	values := [5]string {"T", "J", "Q", "K", "A"}
-	matchedValuesCount := 0
+	return true
+}
 
-	for _, value := range values {
-		for _, card := range hand {
-			if card.Value == value {
-				matchedValuesCount++
-				break
-			}
+func isStraightFlush(hand Hand) bool {
+	if !isSameSuit(hand[:]) {
+		return false
+	}
+
+	var values [5]string
+
+	for i, card := range hand {
+		values[i] = card.Value
+	}
+
+	return strings.Contains(cardValues, strings.Join(values[:], separator))
+}
+
+func isSameSuit(cards []Card) bool {
+	for _, card := range cards {
+		if card.Suit != cards[0].Suit {
+			return false
 		}
 	}
 
-	return matchedValuesCount == 5
+	return true
 }
 
 func parseHands(hands string) (Hand, Hand) {
 	var first, second Hand
-	cardStrings := strings.Split(hands, " ")
+	cardStrings := strings.Split(hands, separator)
 
 	if len(cardStrings) != 10 {
 		log.Fatal("Failed to parse a line with hands: wrong length!/n")
@@ -122,7 +141,28 @@ func parseHands(hands string) (Hand, Hand) {
 		second[i] = parseCardString(cardString)
 	}
 
-	return first, second
+	return sortByValue(first), sortByValue(second)
+}
+
+func sortByValue(hand Hand) Hand {
+	var sortedHand Hand
+	i := 0
+
+	for _, value := range strings.Split(cardValues, separator) {
+		for _, card := range hand {
+			if card.Value == value {
+				sortedHand[i] = card
+				i++
+				break
+			}
+		}
+
+		if i == 5 {
+			break
+		}
+	}
+
+	return sortedHand
 }
 
 func parseCardString(cardString string) Card {

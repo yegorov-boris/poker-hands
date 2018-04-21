@@ -10,10 +10,11 @@ import (
 //const url = "https://projecteuler.net/project/resources/p054_poker.txt"
 const cardValues = "2 3 4 5 6 7 8 9 T J Q K A"
 var suits = "D C H S"
-//var cardValues = [13]string {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}
+//var cardValues = [13]string {"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
 //var suits = [4]string {"D", "C", "H", "S"}
 
 type Card struct {Suit, Value string}
+type Hand [5]Card
 
 //func main() {
 //	resp, errGet := http.Get(url)
@@ -63,7 +64,7 @@ type Card struct {Suit, Value string}
 //}
 
 func main() {
-	isFirstPlayerWinner("5H 5C 6S 7S KD 2C 3S 8S 8D TD")
+	isFirstPlayerWinner("JH QH TH AH KH 2C 3S 8S 8D TD")
 }
 
 //func createChecker(input chan string, output chan bool) {
@@ -78,14 +79,36 @@ func main() {
 func isFirstPlayerWinner(hands string) bool {
 	first, second := parseHands(hands)
 
-	fmt.Print(first)
+	fmt.Print(isRoyalFlush(first))
 	fmt.Print(second)
 
 	return false
 }
 
-func parseHands(hands string) ([5]Card, [5]Card) {
-	var first, second [5]Card
+func isRoyalFlush(hand Hand) bool {
+	for _, card := range hand {
+		if card.Suit != hand[0].Suit {
+			return false;
+		}
+	}
+
+	values := [5]string {"T", "J", "Q", "K", "A"}
+	matchedValuesCount := 0
+
+	for _, value := range values {
+		for _, card := range hand {
+			if card.Value == value {
+				matchedValuesCount++
+				break
+			}
+		}
+	}
+
+	return matchedValuesCount == 5
+}
+
+func parseHands(hands string) (Hand, Hand) {
+	var first, second Hand
 	cardStrings := strings.Split(hands, " ")
 
 	if len(cardStrings) != 10 {

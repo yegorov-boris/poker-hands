@@ -65,7 +65,7 @@ type Hand [5]Card
 //}
 
 func main() {
-	isFirstPlayerWinner("JH QH TH AH KH 2C 3C 4C 5C 6C")
+	isFirstPlayerWinner("JH QH TH AH KH 4C 4C 4C 5C 4D")
 }
 
 //func createChecker(input chan string, output chan bool) {
@@ -81,7 +81,9 @@ func isFirstPlayerWinner(hands string) bool {
 	first, second := parseHands(hands)
 
 	fmt.Print(isRoyalFlush(first))
-	fmt.Print(isStraightFlush(second))
+	fmt.Println("-----")
+	fmt.Print(isFourKind(second))
+	fmt.Println("-----")
 
 	return false
 }
@@ -114,6 +116,10 @@ func isStraightFlush(hand Hand) bool {
 	}
 
 	return strings.Contains(cardValues, strings.Join(values[:], separator))
+}
+
+func isFourKind(hand Hand) bool {
+	return (hand[0].Value == hand[3].Value) || (hand[1].Value == hand[4].Value)
 }
 
 func isSameSuit(cards []Card) bool {
@@ -153,7 +159,6 @@ func sortByValue(hand Hand) Hand {
 			if card.Value == value {
 				sortedHand[i] = card
 				i++
-				break
 			}
 		}
 

@@ -65,7 +65,7 @@ type Hand [5]Card
 //}
 
 func main() {
-	isFirstPlayerWinner("JH QH TH AH KH 4C 4C 4C 5C 4D")
+	isFirstPlayerWinner("JH QH TH AH KH 9C 3D 3S 3S 9D")
 }
 
 //func createChecker(input chan string, output chan bool) {
@@ -82,14 +82,14 @@ func isFirstPlayerWinner(hands string) bool {
 
 	fmt.Print(isRoyalFlush(first))
 	fmt.Println("-----")
-	fmt.Print(isFourKind(second))
+	fmt.Print(isFullHouse(second))
 	fmt.Println("-----")
 
 	return false
 }
 
 func isRoyalFlush(hand Hand) bool {
-	if !isSameSuit(hand[:]) {
+	if !isFlush(hand[:]) {
 		return false
 	}
 
@@ -105,10 +105,30 @@ func isRoyalFlush(hand Hand) bool {
 }
 
 func isStraightFlush(hand Hand) bool {
-	if !isSameSuit(hand[:]) {
-		return false
+	return isFlush(hand[:]) && isStraight(hand)
+}
+
+func isFourKind(hand Hand) bool {
+	return (hand[0].Value == hand[3].Value) || (hand[1].Value == hand[4].Value)
+}
+
+func isFullHouse(hand Hand) bool {
+	twoAndThree := (hand[0].Value == hand[1].Value) && (hand[2].Value == hand[4].Value)
+	threeAndTwo := (hand[0].Value == hand[2].Value) && (hand[3].Value == hand[4].Value)
+	return twoAndThree || threeAndTwo
+}
+
+func isFlush(cards []Card) bool {
+	for _, card := range cards {
+		if card.Suit != cards[0].Suit {
+			return false
+		}
 	}
 
+	return true
+}
+
+func isStraight(hand Hand) bool {
 	var values [5]string
 
 	for i, card := range hand {
@@ -118,18 +138,30 @@ func isStraightFlush(hand Hand) bool {
 	return strings.Contains(cardValues, strings.Join(values[:], separator))
 }
 
-func isFourKind(hand Hand) bool {
-	return (hand[0].Value == hand[3].Value) || (hand[1].Value == hand[4].Value)
+func isThreeKind(hand Hand) bool {
+	left := hand[0].Value == hand[2].Value
+	middle := hand[1].Value == hand[3].Value
+	right := hand[2].Value == hand[4].Value
+
+	return left || middle || right
 }
 
-func isSameSuit(cards []Card) bool {
-	for _, card := range cards {
-		if card.Suit != cards[0].Suit {
-			return false
+func isTwoPairs(hand Hand) bool {
+	left := (hand[1].Value == hand[2].Value) && (hand[3].Value == hand[4].Value)
+	middle := (hand[0].Value == hand[1].Value) && (hand[3].Value == hand[4].Value)
+	right := (hand[0].Value == hand[1].Value) && (hand[2].Value == hand[3].Value)
+
+	return left || middle || right
+}
+
+func isOnePair(hand Hand) bool {
+	for i := 0; i < 4; i++ {
+		if hand[i].Value == hand[i + 1].Value {
+			return true
 		}
 	}
 
-	return true
+	return false
 }
 
 func parseHands(hands string) (Hand, Hand) {

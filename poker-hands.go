@@ -55,7 +55,7 @@ func main() {
 		}
 
 		for i := 0; i < currentChunkSize; i++ {
-			if firstPlayerWon := <- outputs[i]; firstPlayerWon {
+			if <- outputs[i] {
 				firstPlayerWinsCount++
 			}
 		}
@@ -75,8 +75,7 @@ func main() {
 func createChecker(input chan string, output chan bool) {
 	go func() {
 		for {
-			hands := <- input
-			output <- isFirstPlayerWinner(hands)
+			output <- isFirstPlayerWinner(<- input)
 		}
 	}()
 }

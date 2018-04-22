@@ -256,11 +256,17 @@ func parseHands(hands string) (Hand, Hand) {
 		log.Fatal("Failed to parse a line with hands: wrong length!/n")
 	}
 
-	for i, cardString := range cardStrings[:5] {
-		first[i] = parseCardString(cardString)
-	}
-	for i, cardString := range cardStrings[5:] {
-		second[i] = parseCardString(cardString)
+	for i, cardString := range cardStrings {
+		if strings.Count(hands, cardString) > 1 {
+			log.Fatalf("Failed to parse a line with hands: %s is not unique!/n", cardString)
+		}
+
+		if i < 5 {
+			first[i] = parseCardString(cardString)
+		} else {
+			second[i % 5] = parseCardString(cardString)
+		}
+
 	}
 
 	return sortByValue(first), sortByValue(second)

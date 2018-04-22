@@ -65,7 +65,7 @@ type Hand [5]Card
 //}
 
 func main() {
-	isFirstPlayerWinner("JH QH TH AH KH 9C 3D 3S 3S 9D")
+	isFirstPlayerWinner("JH QH TH AH KH 3D 6D 7D TD QD")
 }
 
 //func createChecker(input chan string, output chan bool) {
@@ -79,17 +79,38 @@ func main() {
 
 func isFirstPlayerWinner(hands string) bool {
 	first, second := parseHands(hands)
+	firstCombination := getCombination(first)
+	secondCombination := getCombination(second)
+	fmt.Println(firstCombination)
+	fmt.Println(secondCombination)
 
-	fmt.Print(isRoyalFlush(first))
-	fmt.Println("-----")
-	fmt.Print(isFullHouse(second))
-	fmt.Println("-----")
+	return firstCombination < secondCombination
+}
 
-	return false
+func getCombination(hand Hand) int {
+	combinationCheckers := []func(Hand) bool {
+		isRoyalFlush,
+		isStraightFlush,
+		isFourKind,
+		isFullHouse,
+		isFlush,
+		isStraight,
+		isThreeKind,
+		isTwoPairs,
+		isOnePair,
+	}
+
+	for i, checker := range combinationCheckers {
+		if checker(hand) {
+			return i
+		}
+	}
+
+	return len(combinationCheckers) - 1
 }
 
 func isRoyalFlush(hand Hand) bool {
-	if !isFlush(hand[:]) {
+	if !isFlush(hand) {
 		return false
 	}
 
@@ -105,7 +126,7 @@ func isRoyalFlush(hand Hand) bool {
 }
 
 func isStraightFlush(hand Hand) bool {
-	return isFlush(hand[:]) && isStraight(hand)
+	return isFlush(hand) && isStraight(hand)
 }
 
 func isFourKind(hand Hand) bool {
@@ -118,9 +139,9 @@ func isFullHouse(hand Hand) bool {
 	return twoAndThree || threeAndTwo
 }
 
-func isFlush(cards []Card) bool {
-	for _, card := range cards {
-		if card.Suit != cards[0].Suit {
+func isFlush(hand Hand) bool {
+	for _, card := range hand {
+		if card.Suit != hand[0].Suit {
 			return false
 		}
 	}

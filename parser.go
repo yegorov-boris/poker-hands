@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"log"
+	"errors"
 )
 
 func ParseHands(hands string) (Hand, Hand) {
@@ -18,10 +19,15 @@ func ParseHands(hands string) (Hand, Hand) {
 			log.Fatalf("Failed to parse a line with hands: %s is not unique!/n", cardString)
 		}
 
+		card, err := ParseCardString(cardString)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		if i < 5 {
-			first[i] = ParseCardString(cardString)
+			first[i] = card
 		} else {
-			second[i % 5] = ParseCardString(cardString)
+			second[i % 5] = card
 		}
 
 	}
@@ -49,22 +55,22 @@ func SortByValue(hand Hand) Hand {
 	return sortedHand
 }
 
-func ParseCardString(cardString string) Card {
+func ParseCardString(cardString string) (Card, error) {
 	length := len(cardString)
 
 	if length != 2 {
-		log.Fatal("Failed to parse an encoded card: wrong length!/n")
+		return  Card{}, errors.New("failed to parse an encoded card: wrong length")
 	}
 
 	suit := cardString[1:]
 	value := cardString[:1]
 
 	if !strings.Contains(Suits, suit) {
-		log.Fatal("Failed to parse an encoded card: wrong suit!/n")
+		return  Card{}, errors.New("failed to parse an encoded card: wrong suit")
 	}
 	if !strings.Contains(CardValues, value) {
-		log.Fatal("Failed to parse an encoded card: wrong card value!/n")
+		return  Card{}, errors.New("failed to parse an encoded card: wrong card value")
 	}
 
-	return Card{Suit: suit, Value: value}
+	return Card{Suit: suit, Value: value}, nil
 }

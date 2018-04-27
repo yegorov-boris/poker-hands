@@ -32,3 +32,19 @@ func RandomStringWithout(minLength int, maxLength int, exceptions string) string
 func PickOne(slice []string) string {
 	return slice[rand.Intn(len(slice))]
 }
+
+func ValidCardValue() string {
+	return PickOne(strings.Split(CardValues, Separator))
+}
+
+func InvalidCardValue() string {
+	return RandomStringWithout(1, 1, CardValues)
+}
+
+func ValidSuit() string {
+	return PickOne(strings.Split(Suits, Separator))
+}
+
+func InvalidSuit() string {
+	return RandomStringWithout(1, 1, Suits)
+}

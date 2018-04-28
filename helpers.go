@@ -34,6 +34,25 @@ func PickOne(slice []string) string {
 	return slice[rand.Intn(len(slice))]
 }
 
+func PickOneWithout(slice []string, exceptions []string) string {
+	var diff []string
+	exceptionsLength := len(exceptions)
+	for _, element := range slice {
+		i := 0
+		for ; i < exceptionsLength; i++ {
+			if element == exceptions[i] {
+				break
+			}
+		}
+
+		if i == exceptionsLength {
+			diff = append(diff, element)
+		}
+	}
+
+	return diff[rand.Intn(len(diff))]
+}
+
 func ValidCardValue() string {
 	return PickOne(strings.Split(CardValues, Separator))
 }
@@ -79,4 +98,11 @@ func SortedHand(exceptions []Card) Hand {
 	return sortedHand
 }
 
+func CopyHand(hand Hand) Hand {
+	var newHand Hand
+	for i, card := range hand {
+		newHand[i] = card
+	}
 
+	return newHand
+}

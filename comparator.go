@@ -1,9 +1,16 @@
 package main
 
-import "strings"
+import (
+	"strings"
+	"log"
+)
 
 func IsFirstPlayerWinner(hands string) bool {
-	first, second := ParseHands(hands)
+	first, second, err := ParseHands(hands)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	firstCombinationRank, firstReordered := GetCombination(first)
 	secondCombinationRank, secondReordered := GetCombination(second)
 

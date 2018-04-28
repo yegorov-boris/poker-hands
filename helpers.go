@@ -3,6 +3,7 @@ package main
 import (
 	"math/rand"
 	"strings"
+	"sort"
 )
 
 func RandomString(minLength int, maxLength int) string {
@@ -48,3 +49,34 @@ func ValidSuit() string {
 func InvalidSuit() string {
 	return RandomStringWithout(1, 1, Suits)
 }
+
+func SortedHand(exceptions []Card) Hand {
+	var deck []Card
+	exceptionsLength := len(exceptions)
+	for _, value := range strings.Split(CardValues, Separator) {
+		for _, suit := range strings.Split(Suits, Separator) {
+			card := Card{Value: value, Suit: suit}
+			i := 0;
+			for ; i < exceptionsLength; i++ {
+				if card == exceptions[i] {
+					break
+				}
+			}
+			if i == exceptionsLength {
+				deck = append(deck, card)
+			}
+		}
+	}
+
+	indexes := rand.Perm(len(deck))[:5]
+	sort.Ints(indexes)
+
+	var sortedHand Hand
+	for i, index := range indexes {
+		sortedHand[i] = deck[index]
+	}
+
+	return sortedHand
+}
+
+

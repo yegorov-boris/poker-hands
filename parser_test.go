@@ -6,7 +6,6 @@ import (
 	"log"
 	"strings"
 	"math/rand"
-	"sort"
 )
 
 func TestParseCardString(t *testing.T) {
@@ -38,19 +37,41 @@ func TestSortByValue(t *testing.T) {
 	log.Println("SortByValue")
 
 	log.Println("should sort a hand by card values")
+	hand := SortedHand([]Card{})
+	unsortedHand := Hand{}
+	for i, index := range rand.Perm(5) {
+		unsortedHand[i] = hand[index]
+	}
+	assert.Equal(t, hand, SortByValue(unsortedHand))
+}
 
-	cardValues := strings.Split(CardValues, Separator)
-	randomCardValuesIndexes := rand.Perm(len(cardValues))[:5]
-	sort.Ints(randomCardValuesIndexes)
-	randomHandIndexes := rand.Perm(5)
+func TestParseHands(t *testing.T) {
+	log.Println("ParseHands")
 
-	var sortedHand Hand
-	var unsortedHand Hand
-	for i, cardValuesIndex := range randomCardValuesIndexes {
-		card := Card{Value: cardValues[cardValuesIndex], Suit: ValidSuit()}
-		sortedHand[i] = card
-		unsortedHand[randomHandIndexes[i]] = card
+	expectedFirst := SortedHand([]Card{})
+	expectedSecond := SortedHand(expectedFirst[:])
+	var cardStrings []string
+	for _, card := range expectedFirst {
+		cardStrings = append(cardStrings, strings.Join([]string{card.Value, card.Suit}, ""))
+	}
+	for _, card := range expectedSecond {
+		cardStrings = append(cardStrings, strings.Join([]string{card.Value, card.Suit}, ""))
 	}
 
-	assert.Equal(t, sortedHand, SortByValue(unsortedHand))
+	log.Println("should parse a string which contains two hands")
+	actualFirst, actualSecond, _ := ParseHands(strings.Join(cardStrings, Separator))
+	assert.Equal(t, expectedFirst, actualFirst)
+	assert.Equal(t, expectedSecond, actualSecond)
+
+	log.Println("should fail when the string is not a ten valid encoded cards (e.g. 9D) separated by a whitespace")
+	_, _, errWrongLength := ParseHands(RandomString(10, 50))
+	assert.Errorf(t, errWrongLength, "failed to parse a line with hands: wrong length")
+
+	log.Println("should fail when the string contains duplicated encoded cards")
+	_, _, errNotUnique := ParseHands(strings.Join(append(cardStrings[:9], cardStrings[0]), Separator))
+	assert.Errorf(t, errNotUnique, "failed to parse a line with hands: %s is not unique", cardStrings[0])
+
+	log.Println("should fail when the card string parser fails")
+	_, _, errCardString := ParseHands(strings.Join(append(cardStrings[:9], RandomString(1, 5)), Separator))
+	assert.Error(t, errCardString)
 }

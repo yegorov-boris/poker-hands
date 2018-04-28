@@ -2,26 +2,26 @@ package main
 
 import (
 	"strings"
-	"log"
 	"errors"
+	"fmt"
 )
 
-func ParseHands(hands string) (Hand, Hand) {
+func ParseHands(hands string) (Hand, Hand, error) {
 	var first, second Hand
 	cardStrings := strings.Split(hands, Separator)
 
 	if len(cardStrings) != 10 {
-		log.Fatal("Failed to parse a line with hands: wrong length!/n")
+		return Hand{}, Hand{}, errors.New("failed to parse a line with hands: wrong length")
 	}
 
 	for i, cardString := range cardStrings {
 		if strings.Count(hands, cardString) > 1 {
-			log.Fatalf("Failed to parse a line with hands: %s is not unique!/n", cardString)
+			return Hand{}, Hand{}, fmt.Errorf("failed to parse a line with hands: %s is not unique", cardString)
 		}
 
 		card, err := ParseCardString(cardString)
 		if err != nil {
-			log.Fatal(err)
+			return Hand{}, Hand{}, err
 		}
 
 		if i < 5 {
@@ -32,7 +32,7 @@ func ParseHands(hands string) (Hand, Hand) {
 
 	}
 
-	return SortByValue(first), SortByValue(second)
+	return SortByValue(first), SortByValue(second), nil
 }
 
 func SortByValue(hand Hand) Hand {

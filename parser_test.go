@@ -42,7 +42,10 @@ func TestSortByValue(t *testing.T) {
 	for i, index := range rand.Perm(5) {
 		unsortedHand[i] = hand[index]
 	}
-	assert.Equal(t, hand, SortByValue(unsortedHand))
+
+	for i, card := range SortByValue(unsortedHand) {
+		assert.Equal(t, hand[i].Value, card.Value)
+	}
 }
 
 func TestParseHands(t *testing.T) {

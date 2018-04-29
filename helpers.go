@@ -106,3 +106,27 @@ func CopyHand(hand Hand) Hand {
 
 	return newHand
 }
+
+func HandNoPairs() Hand {
+	cardValues := strings.Split(CardValues, Separator)
+	indexes := rand.Perm(len(cardValues))[:5]
+	sort.Ints(indexes)
+
+	var hand Hand
+	for i, index := range indexes {
+		hand[i] = Card{Value: cardValues[index], Suit: ValidSuit()}
+	}
+
+	return hand
+}
+
+func HandWithPair(i int) Hand {
+	suits := strings.Split(Suits, Separator)
+	hand := HandNoPairs()
+	hand[i + 1] = Card{
+		Value: hand[i].Value,
+		Suit: PickOneWithout(suits, []string{hand[i].Suit}),
+	}
+
+	return hand
+}

@@ -61,12 +61,38 @@ func TestIsStraight(t *testing.T) {
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
 	checkThree(t, IsStraight, false)
 
-	log.Println("should return true and a reordered hand when the hand is straight")
+	log.Println("should return true and a hand when the hand is straight")
+	checkStraight(t, IsStraight, true)
+}
+
+func TestIsFlush(t *testing.T) {
+	log.Println("IsFlush")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsFlush)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsFlush, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsFlush, false)
+
+	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsFlush, false)
+
+	log.Println("should return false and a hand when the hand is straight")
+	checkStraight(t, IsFlush, false)
+
+	log.Println("should return true and a hand when the hand is flush")
 	func () {
-		handStraight := HandStraight()
-		isStraight, actualHand := IsStraight(handStraight)
-		assert.Equal(t, true, isStraight)
-		assert.Equal(t, handStraight, actualHand)
+		handFlush := HandNoPairs()
+		for i := 1; i < 5; i++ {
+			handFlush[i].Suit = handFlush[0].Suit
+		}
+
+		isFlush, actualHand := IsFlush(handFlush)
+		assert.Equal(t, true, isFlush)
+		assert.Equal(t, handFlush, actualHand)
 	}()
 }
 
@@ -149,4 +175,11 @@ func checkThree(t *testing.T, checker func (Hand) (bool, Hand), expectedResult b
 		assert.Equal(t, expectedResult, hasThree)
 		assert.Equal(t, handWithThree, actualHand)
 	}
+}
+
+func checkStraight(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	handStraight := HandStraight()
+	isStraight, actualHand := checker(handStraight)
+	assert.Equal(t, expectedResult, isStraight)
+	assert.Equal(t, handStraight, actualHand)
 }

@@ -103,9 +103,19 @@ func HandNoPairs() Hand {
 	indexes := rand.Perm(len(cardValues))[:5]
 	sort.Ints(indexes)
 
+	// check if it's not straight
+	if indexes[4] == indexes[0] + 4 {
+		return HandNoPairs()
+	}
+
 	var hand Hand
 	for i, index := range indexes {
 		hand[i] = Card{Value: cardValues[index], Suit: ValidSuit()}
+	}
+
+	// check if it's not flush
+	if isFlush(hand) {
+		return HandNoPairs()
 	}
 
 	return hand
@@ -119,6 +129,11 @@ func HandWithPair(i int) Hand {
 		Suit: PickOneWithout(suits, []string{hand[i].Suit}),
 	}
 
+	// check if it's not flush
+	if isFlush(hand) {
+		return HandWithPair(i)
+	}
+
 	return hand
 }
 
@@ -129,6 +144,11 @@ func HandWithTwoPairs(i, j int) Hand {
 		Suit: PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit}),
 	}
 
+	// check if it's not flush
+	if isFlush(hand) {
+		return HandWithTwoPairs(i, j)
+	}
+
 	return hand
 }
 
@@ -137,6 +157,11 @@ func HandWithThree(i int) Hand {
 	hand[i + 2] = Card{
 		Value: hand[i].Value,
 		Suit: PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit, hand[i + 1].Suit}),
+	}
+
+	// check if it's not flush
+	if isFlush(hand) {
+		return HandWithThree(i)
 	}
 
 	return hand
@@ -151,5 +176,16 @@ func HandStraight() Hand {
 		hand[j] = Card{Value: value, Suit: ValidSuit()}
 	}
 
+	// check if it's not flush
+	if isFlush(hand) {
+		return HandStraight()
+	}
+
 	return hand
+}
+
+func isFlush(hand Hand) bool {
+	expected := [5]string{hand[0].Suit, hand[0].Suit, hand[0].Suit, hand[0].Suit, hand[0].Suit}
+	actual := [5]string{hand[0].Suit, hand[1].Suit, hand[2].Suit, hand[3].Suit, hand[4].Suit}
+	return expected == actual
 }

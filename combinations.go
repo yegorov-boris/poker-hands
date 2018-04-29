@@ -67,13 +67,13 @@ func IsFlush(hand Hand) (bool, Hand) {
 }
 
 func IsStraight(hand Hand) (bool, Hand) {
-	var values [5]string
+	var values []string
 
-	for i, card := range hand {
-		values[i] = card.Value
+	for _, card := range hand {
+		values = append(values, card.Value)
 	}
 
-	return strings.Contains(CardValues, strings.Join(values[:], Separator)), hand
+	return strings.Contains(CardValues, strings.Join(values, Separator)), hand
 }
 
 func IsThreeKind(hand Hand) (bool, Hand) {

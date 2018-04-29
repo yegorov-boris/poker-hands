@@ -11,18 +11,77 @@ func TestIsOnePair(t *testing.T) {
 	log.Println("IsOnePair")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	func () {
-		handNoPairs := HandNoPairs()
-		isPair, actualHand := IsOnePair(handNoPairs)
-		assert.Equal(t, false, isPair)
-		assert.Equal(t, handNoPairs, actualHand)
-	}()
+	checkNoCombinations(t, IsOnePair)
 
 	log.Println("should return true and a reordered hand when the hand contains a pair")
-	func () {
-		i := rand.Intn(4)
-		handWithPair := HandWithPair(i)
+	checkOnePair(t, IsOnePair, true)
+}
 
+func TestIsTwoPairs(t *testing.T) {
+	log.Println("IsTwoPairs")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsTwoPairs)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsTwoPairs, false)
+
+	log.Println("should return true and a reordered hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsTwoPairs, true)
+}
+
+func TestIsThreeKind(t *testing.T) {
+	log.Println("IsThreeKind")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsThreeKind)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsThreeKind, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsThreeKind, false)
+
+	log.Println("should return true and a reordered hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsThreeKind, true)
+}
+
+func TestIsStraight(t *testing.T) {
+	log.Println("IsStraight")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsStraight)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsStraight, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsStraight, false)
+
+	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsStraight, false)
+
+	log.Println("should return true and a reordered hand when the hand is straight")
+	func () {
+		handStraight := HandStraight()
+		isStraight, actualHand := IsStraight(handStraight)
+		assert.Equal(t, true, isStraight)
+		assert.Equal(t, handStraight, actualHand)
+	}()
+}
+
+func checkNoCombinations(t *testing.T, checker func (Hand) (bool, Hand)) {
+	handNoPairs := HandNoPairs()
+	actualResult, actualHand := checker(handNoPairs)
+	assert.Equal(t, false, actualResult)
+	assert.Equal(t, handNoPairs, actualHand)
+}
+
+func checkOnePair(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	i := rand.Intn(4)
+	handWithPair := HandWithPair(i)
+
+	if expectedResult {
 		expectedHand := Hand{handWithPair[i], handWithPair[i + 1]}
 		for k, card := range handWithPair[:i] {
 			expectedHand[2 + k] = card
@@ -31,38 +90,27 @@ func TestIsOnePair(t *testing.T) {
 			expectedHand[i + 2 + k] = card
 		}
 
-		isPair, actualHand := IsOnePair(handWithPair)
-		assert.Equal(t, true, isPair)
+		actualResult, actualHand := checker(handWithPair)
+		assert.Equal(t, expectedResult, actualResult)
 		assert.Equal(t, expectedHand, actualHand)
-	}()
+	} else {
+		actualResult, actualHand := checker(handWithPair)
+		assert.Equal(t, expectedResult, actualResult)
+		assert.Equal(t, handWithPair, actualHand)
+	}
 }
 
-func TestIsTwoPairs(t *testing.T) {
-	log.Println("IsTwoPairs")
+func checkTwoPairs(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	i := rand.Intn(2)
+	var j int
+	if i == 0 {
+		j = 2 + rand.Intn(2)
+	} else {
+		j = 3
+	}
+	handWithPairs := HandWithTwoPairs(i, j)
 
-	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	func () {
-		handNoPairs := HandNoPairs()
-		hasTwoPairs, actualHand := IsTwoPairs(handNoPairs)
-		assert.Equal(t, false, hasTwoPairs)
-		assert.Equal(t, handNoPairs, actualHand)
-	}()
-
-	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	func () {
-		i := rand.Intn(4)
-		handWithPair := HandWithPair(i)
-		hasTwoPairs, actualHand := IsTwoPairs(handWithPair)
-		assert.Equal(t, false, hasTwoPairs)
-		assert.Equal(t, handWithPair, actualHand)
-	}()
-
-	log.Println("should return true and a reordered hand when the hand contains 2 pairs")
-	func () {
-		i := rand.Intn(3)
-		j := i + 1 + rand.Intn(2)
-		handWithPairs := HandWithTwoPairs(i, j)
-
+	if expectedResult {
 		expectedHand := Hand{handWithPairs[i], handWithPairs[i + 1], handWithPairs[j], handWithPairs[j + 1]}
 		for k :=0; k < 5; k++ {
 			if (k < i) || (k > j + 1) || ((k > i + 1) && (k < j)) {
@@ -70,55 +118,21 @@ func TestIsTwoPairs(t *testing.T) {
 			}
 		}
 
-		hasTwoPairs, actualHand := IsTwoPairs(handWithPairs)
-		assert.Equal(t, true, hasTwoPairs)
+		hasTwoPairs, actualHand := checker(handWithPairs)
+		assert.Equal(t, expectedResult, hasTwoPairs)
 		assert.Equal(t, expectedHand, actualHand)
-	}()
+	} else {
+		hasTwoPairs, actualHand := checker(handWithPairs)
+		assert.Equal(t, expectedResult, hasTwoPairs)
+		assert.Equal(t, handWithPairs, actualHand)
+	}
 }
 
-func TestIsThreeKind(t *testing.T) {
-	log.Println("IsThreeKind")
+func checkThree(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	i := rand.Intn(3)
+	handWithThree := HandWithThree(i)
 
-	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	func () {
-		handNoPairs := HandNoPairs()
-		hasThree, actualHand := IsThreeKind(handNoPairs)
-		assert.Equal(t, false, hasThree)
-		assert.Equal(t, handNoPairs, actualHand)
-	}()
-
-	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	func () {
-		i := rand.Intn(4)
-		handWithPair := HandWithPair(i)
-		hasThree, actualHand := IsThreeKind(handWithPair)
-		assert.Equal(t, false, hasThree)
-		assert.Equal(t, handWithPair, actualHand)
-	}()
-
-	log.Println("should return false and a hand when the hand contains 2 pairs")
-	func () {
-		i := rand.Intn(2)
-		j := i + 2 + rand.Intn(2)
-		handWithPairs := HandWithTwoPairs(i, j)
-
-		expectedHand := Hand{handWithPairs[i], handWithPairs[i + 1], handWithPairs[j], handWithPairs[j + 1]}
-		for k :=0; k < 5; k++ {
-			if (k < i) || (k > j + 1) || ((k > i + 1) && (k < j)) {
-				expectedHand[4] = handWithPairs[k]
-			}
-		}
-
-		hasThree, actualHand := IsThreeKind(handWithPairs)
-		assert.Equal(t, false, hasThree)
-		assert.Equal(t, expectedHand, actualHand)
-	}()
-
-	log.Println("should return true and a reordered hand when the hand contains 3 cards of the same value")
-	func () {
-		i := rand.Intn(3)
-		handWithThree := HandWithThree(i)
-
+	if expectedResult {
 		expectedHand := Hand{handWithThree[i], handWithThree[i + 1], handWithThree[i + 2]}
 		for j := 0; j < i; j++ {
 			expectedHand[j + 3] = handWithThree[j]
@@ -127,8 +141,12 @@ func TestIsThreeKind(t *testing.T) {
 			expectedHand[j] = handWithThree[j]
 		}
 
-		hasThree, actualHand := IsThreeKind(handWithThree)
-		assert.Equal(t, true, hasThree)
+		hasThree, actualHand := checker(handWithThree)
+		assert.Equal(t, expectedResult, hasThree)
 		assert.Equal(t, expectedHand, actualHand)
-	}()
+	} else {
+		hasThree, actualHand := checker(handWithThree)
+		assert.Equal(t, expectedResult, hasThree)
+		assert.Equal(t, handWithThree, actualHand)
+	}
 }

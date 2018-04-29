@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 func IsRoyalFlush(hand Hand) (bool, Hand) {
 

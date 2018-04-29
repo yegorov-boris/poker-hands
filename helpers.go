@@ -141,3 +141,15 @@ func HandWithThree(i int) Hand {
 
 	return hand
 }
+
+func HandStraight() Hand {
+	cardValues := strings.Split(CardValues, Separator)
+	i := rand.Intn(len(cardValues) - 4)
+
+	var hand Hand
+	for j, value := range cardValues[i:i + 5] {
+		hand[j] = Card{Value: value, Suit: ValidSuit()}
+	}
+
+	return hand
+}

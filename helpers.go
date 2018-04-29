@@ -98,15 +98,6 @@ func SortedHand(exceptions []Card) Hand {
 	return sortedHand
 }
 
-func CopyHand(hand Hand) Hand {
-	var newHand Hand
-	for i, card := range hand {
-		newHand[i] = card
-	}
-
-	return newHand
-}
-
 func HandNoPairs() Hand {
 	cardValues := strings.Split(CardValues, Separator)
 	indexes := rand.Perm(len(cardValues))[:5]
@@ -126,6 +117,26 @@ func HandWithPair(i int) Hand {
 	hand[i + 1] = Card{
 		Value: hand[i].Value,
 		Suit: PickOneWithout(suits, []string{hand[i].Suit}),
+	}
+
+	return hand
+}
+
+func HandWithTwoPairs(i, j int) Hand {
+	hand := HandWithPair(i)
+	hand[j + 1] = Card{
+		Value: hand[j].Value,
+		Suit: PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit}),
+	}
+
+	return hand
+}
+
+func HandWithThree(i int) Hand {
+	hand := HandWithPair(i)
+	hand[i + 2] = Card{
+		Value: hand[i].Value,
+		Suit: PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit, hand[i + 1].Suit}),
 	}
 
 	return hand

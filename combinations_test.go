@@ -4,7 +4,6 @@ import (
 	"testing"
 	"log"
 	"github.com/stretchr/testify/assert"
-	"math/rand"
 )
 
 func TestIsOnePair(t *testing.T) {
@@ -219,17 +218,10 @@ func checkNoCombinations(t *testing.T, checker func (Hand) (bool, Hand)) {
 }
 
 func checkOnePair(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
-	i := rand.Intn(4)
-	handWithPair := HandWithPair(i)
+	handWithPair := HandWithPair()
 
 	if expectedResult {
-		expectedHand := Hand{handWithPair[i], handWithPair[i + 1]}
-		for k, card := range handWithPair[:i] {
-			expectedHand[2 + k] = card
-		}
-		for k, card := range handWithPair[i + 2:] {
-			expectedHand[i + 2 + k] = card
-		}
+		expectedHand := ReorderOnePair(handWithPair)
 
 		actualResult, actualHand := checker(handWithPair)
 		assert.Equal(t, expectedResult, actualResult)
@@ -242,22 +234,10 @@ func checkOnePair(t *testing.T, checker func (Hand) (bool, Hand), expectedResult
 }
 
 func checkTwoPairs(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
-	i := rand.Intn(2)
-	var j int
-	if i == 0 {
-		j = 2 + rand.Intn(2)
-	} else {
-		j = 3
-	}
-	handWithPairs := HandWithTwoPairs(i, j)
+	handWithPairs := HandWithTwoPairs()
 
 	if expectedResult {
-		expectedHand := Hand{handWithPairs[i], handWithPairs[i + 1], handWithPairs[j], handWithPairs[j + 1]}
-		for k :=0; k < 5; k++ {
-			if (k < i) || (k > j + 1) || ((k > i + 1) && (k < j)) {
-				expectedHand[4] = handWithPairs[k]
-			}
-		}
+		expectedHand := ReorderTwoPairs(handWithPairs)
 
 		hasTwoPairs, actualHand := checker(handWithPairs)
 		assert.Equal(t, expectedResult, hasTwoPairs)
@@ -270,17 +250,10 @@ func checkTwoPairs(t *testing.T, checker func (Hand) (bool, Hand), expectedResul
 }
 
 func checkThree(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
-	i := rand.Intn(3)
-	handWithThree := HandWithThree(i)
+	handWithThree := HandWithThree()
 
 	if expectedResult {
-		expectedHand := Hand{handWithThree[i], handWithThree[i + 1], handWithThree[i + 2]}
-		for j := 0; j < i; j++ {
-			expectedHand[j + 3] = handWithThree[j]
-		}
-		for j := i + 3; j < 5; j++ {
-			expectedHand[j] = handWithThree[j]
-		}
+		expectedHand := ReorderThree(handWithThree)
 
 		hasThree, actualHand := checker(handWithThree)
 		assert.Equal(t, expectedResult, hasThree)
@@ -310,11 +283,7 @@ func checkFlush(t *testing.T, checker func (Hand) (bool, Hand), expectedResult b
 
 func checkFullHouse(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
 	handFullHouse := HandFullHouse()
-
-	expectedHand := handFullHouse
-	if handFullHouse[0].Value != handFullHouse[2].Value {
-		expectedHand = Hand{handFullHouse[2], handFullHouse[3], handFullHouse[4], handFullHouse[0], handFullHouse[1]}
-	}
+	expectedHand := ReorderFullHouse(handFullHouse)
 
 	isFullHouse, actualHand := checker(handFullHouse)
 	assert.Equal(t, expectedResult, isFullHouse)
@@ -323,11 +292,7 @@ func checkFullHouse(t *testing.T, checker func (Hand) (bool, Hand), expectedResu
 
 func checkFour(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
 	handFour := HandFour()
-
-	expectedHand := handFour
-	if handFour[0].Value != handFour[3].Value {
-		expectedHand = Hand{handFour[1], handFour[2], handFour[3], handFour[4], handFour[0]}
-	}
+	expectedHand := ReorderFour(handFour)
 
 	hasFour, actualHand := checker(handFour)
 	assert.Equal(t, expectedResult, hasFour)

@@ -140,6 +140,37 @@ func TestIsFourKind(t *testing.T) {
 	checkFour(t, IsFourKind, true)
 }
 
+func TestIsStraightFlush(t *testing.T) {
+	log.Println("IsStraightFlush")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsStraightFlush)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsStraightFlush, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsStraightFlush, false)
+
+	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsStraightFlush, false)
+
+	log.Println("should return false and a hand when the hand is straight")
+	checkStraight(t, IsStraightFlush, false)
+
+	log.Println("should return false and a hand when the hand is flush")
+	checkFlush(t, IsStraightFlush, false)
+
+	log.Println("should return false and a hand when the hand is full house")
+	checkFullHouse(t, IsStraightFlush, false)
+
+	log.Println("should return false and a hand when the hand has four cards of the same value")
+	checkFour(t, IsStraightFlush, false)
+
+	log.Println("should return true and a hand when the hand is straight flush")
+	checkStraightFlush(t, IsStraightFlush, true)
+}
+
 func checkNoCombinations(t *testing.T, checker func (Hand) (bool, Hand)) {
 	handNoPairs := HandNoPairs()
 	actualResult, actualHand := checker(handNoPairs)
@@ -261,4 +292,12 @@ func checkFour(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bo
 	hasFour, actualHand := checker(handFour)
 	assert.Equal(t, expectedResult, hasFour)
 	assert.Equal(t, expectedHand, actualHand)
+}
+
+func checkStraightFlush(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	handStraightFlush := HandStraightFlush()
+
+	isStraightFlush, actualHand := checker(handStraightFlush)
+	assert.Equal(t, expectedResult, isStraightFlush)
+	assert.Equal(t, handStraightFlush, actualHand)
 }

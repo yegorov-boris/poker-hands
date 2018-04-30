@@ -245,3 +245,16 @@ func HandFour() Hand {
 
 	return hand
 }
+
+func HandStraightFlush() Hand {
+	cardValues := strings.Split(CardValues, Separator)
+	i := rand.Intn(len(cardValues) - 4)
+	suit := PickOne(strings.Split(Suits, Separator))
+
+	var hand Hand
+	for j, value := range cardValues[i:i + 5] {
+		hand[j] = Card{Value: value, Suit: suit}
+	}
+
+	return hand
+}

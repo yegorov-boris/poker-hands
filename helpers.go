@@ -258,3 +258,13 @@ func HandStraightFlush() Hand {
 
 	return hand
 }
+
+func HandRoyalFlush() Hand {
+	suit := ValidSuit()
+	var hand Hand
+	for i, value := range []string{"A", "K", "Q", "J", "T"} {
+		hand[i] = Card{Value: value, Suit: suit}
+	}
+
+	return hand
+}

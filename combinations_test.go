@@ -167,8 +167,48 @@ func TestIsStraightFlush(t *testing.T) {
 	log.Println("should return false and a hand when the hand has four cards of the same value")
 	checkFour(t, IsStraightFlush, false)
 
-	log.Println("should return true and a hand when the hand is straight flush")
+	log.Println("should return true and a hand when the hand is a straight flush")
 	checkStraightFlush(t, IsStraightFlush, true)
+}
+
+func TestIsRoyalFlush(t *testing.T) {
+	log.Println("IsRoyalFlush")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsRoyalFlush)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand is straight")
+	checkStraight(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand is flush")
+	checkFlush(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand is full house")
+	checkFullHouse(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand has four cards of the same value")
+	checkFour(t, IsRoyalFlush, false)
+
+	log.Println("should return false and a hand when the hand is a straight flush")
+	checkStraightFlush(t, IsRoyalFlush, false)
+
+	log.Println("should return true and a hand when the hand is a royal flush")
+	func () {
+		handRoyalFlush := HandRoyalFlush()
+
+		isRoyalFlush, actualHand := IsRoyalFlush(handRoyalFlush)
+		assert.Equal(t, true, isRoyalFlush)
+		assert.Equal(t, handRoyalFlush, actualHand)
+	}()
 }
 
 func checkNoCombinations(t *testing.T, checker func (Hand) (bool, Hand)) {

@@ -10,9 +10,7 @@ func IsRoyalFlush(hand Hand) (bool, Hand) {
 		return false, hand
 	}
 
-	values := [5]string {"A", "K", "Q", "J", "T"}
-
-	for i, value := range values {
+	for i, value := range strings.Split(CardValues, Separator)[:5] {
 		if hand[i].Value != value {
 			return false, hand
 		}

@@ -43,11 +43,12 @@ func GetCombination(hand Hand) (int, Hand) {
 		IsOnePair,
 	}
 
-	for i, checker := range combinationCheckers {
-		if isMatching, reorderedHand := checker(hand); isMatching {
+	i := 0
+	for ; i < len(combinationCheckers); i++ {
+		if isMatching, reorderedHand := combinationCheckers[i](hand); isMatching {
 			return i, reorderedHand
 		}
 	}
 
-	return len(combinationCheckers) - 1, hand
+	return i, hand
 }

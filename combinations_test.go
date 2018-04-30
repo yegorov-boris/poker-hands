@@ -84,16 +84,60 @@ func TestIsFlush(t *testing.T) {
 	checkStraight(t, IsFlush, false)
 
 	log.Println("should return true and a hand when the hand is flush")
-	func () {
-		handFlush := HandNoPairs()
-		for i := 1; i < 5; i++ {
-			handFlush[i].Suit = handFlush[0].Suit
-		}
+	checkFlush(t, IsFlush, true)
+}
 
-		isFlush, actualHand := IsFlush(handFlush)
-		assert.Equal(t, true, isFlush)
-		assert.Equal(t, handFlush, actualHand)
-	}()
+func TestIsFullHouse(t *testing.T) {
+	log.Println("IsFullHouse")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsFullHouse)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsFullHouse, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsFullHouse, false)
+
+	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsFullHouse, false)
+
+	log.Println("should return false and a hand when the hand is straight")
+	checkStraight(t, IsFullHouse, false)
+
+	log.Println("should return false and a hand when the hand is flush")
+	checkFlush(t, IsFullHouse, false)
+
+	log.Println("should return true and a reordered hand when the hand is full house")
+	checkFullHouse(t, IsFullHouse, true)
+}
+
+func TestIsFourKind(t *testing.T) {
+	log.Println("IsFourKind")
+
+	log.Println("should return false and a hand when the hand doesn't contain a pair")
+	checkNoCombinations(t, IsFourKind)
+
+	log.Println("should return false and a hand when the hand contains exactly 1 pair")
+	checkOnePair(t, IsFourKind, false)
+
+	log.Println("should return false and a hand when the hand contains 2 pairs")
+	checkTwoPairs(t, IsFourKind, false)
+
+	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
+	checkThree(t, IsFourKind, false)
+
+	log.Println("should return false and a hand when the hand is straight")
+	checkStraight(t, IsFourKind, false)
+
+	log.Println("should return false and a hand when the hand is flush")
+	checkFlush(t, IsFourKind, false)
+
+	log.Println("should return false and a hand when the hand is full house")
+	checkFullHouse(t, IsFourKind, false)
+
+	log.Println("should return true and a reordered hand when the hand has four cards of the same value")
+	checkFour(t, IsFourKind, true)
 }
 
 func checkNoCombinations(t *testing.T, checker func (Hand) (bool, Hand)) {
@@ -182,4 +226,39 @@ func checkStraight(t *testing.T, checker func (Hand) (bool, Hand), expectedResul
 	isStraight, actualHand := checker(handStraight)
 	assert.Equal(t, expectedResult, isStraight)
 	assert.Equal(t, handStraight, actualHand)
+}
+
+func checkFlush(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	handFlush := HandFlush()
+
+	isFlush, actualHand := checker(handFlush)
+	assert.Equal(t, expectedResult, isFlush)
+	assert.Equal(t, handFlush, actualHand)
+
+}
+
+func checkFullHouse(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	handFullHouse := HandFullHouse()
+
+	expectedHand := handFullHouse
+	if handFullHouse[0].Value != handFullHouse[2].Value {
+		expectedHand = Hand{handFullHouse[2], handFullHouse[3], handFullHouse[4], handFullHouse[0], handFullHouse[1]}
+	}
+
+	isFullHouse, actualHand := checker(handFullHouse)
+	assert.Equal(t, expectedResult, isFullHouse)
+	assert.Equal(t, expectedHand, actualHand)
+}
+
+func checkFour(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+	handFour := HandFour()
+
+	expectedHand := handFour
+	if handFour[0].Value != handFour[3].Value {
+		expectedHand = Hand{handFour[1], handFour[2], handFour[3], handFour[4], handFour[0]}
+	}
+
+	hasFour, actualHand := checker(handFour)
+	assert.Equal(t, expectedResult, hasFour)
+	assert.Equal(t, expectedHand, actualHand)
 }

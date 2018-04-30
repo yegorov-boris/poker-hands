@@ -189,3 +189,59 @@ func isFlush(hand Hand) bool {
 	actual := [5]string{hand[0].Suit, hand[1].Suit, hand[2].Suit, hand[3].Suit, hand[4].Suit}
 	return expected == actual
 }
+
+func HandFlush() Hand {
+	hand := HandNoPairs()
+	for i := 1; i < 5; i++ {
+		hand[i].Suit = hand[0].Suit
+	}
+
+	return hand
+}
+
+func HandFullHouse() Hand {
+	cardValues := strings.Split(CardValues, Separator)
+	suits := strings.Split(Suits, Separator)
+	valuesIndexes := rand.Perm(len(cardValues))[:2]
+	suitsIndexes := rand.Perm(len(suits))[:3]
+
+	var hand Hand
+	if valuesIndexes[0] < valuesIndexes[1] {
+		for i := 0; i < 3; i++ {
+			hand[i] = Card{Value: cardValues[valuesIndexes[0]], Suit: suits[suitsIndexes[i]]}
+		}
+		for i := 0; i < 2; i++ {
+			hand[i + 3] = Card{Value: cardValues[valuesIndexes[1]], Suit: suits[suitsIndexes[i]]}
+		}
+	} else {
+		for i := 0; i < 2; i++ {
+			hand[i] = Card{Value: cardValues[valuesIndexes[1]], Suit: suits[suitsIndexes[i]]}
+		}
+		for i := 0; i < 3; i++ {
+			hand[i + 2] = Card{Value: cardValues[valuesIndexes[0]], Suit: suits[suitsIndexes[i]]}
+		}
+	}
+
+	return hand
+}
+
+func HandFour() Hand {
+	cardValues := strings.Split(CardValues, Separator)
+	suits := strings.Split(Suits, Separator)
+	valuesIndexes := rand.Perm(len(cardValues))[:2]
+
+	var hand Hand
+	if valuesIndexes[0] < valuesIndexes[1] {
+		for i, suit := range suits {
+			hand[i] = Card{Value: cardValues[valuesIndexes[0]], Suit: suit}
+		}
+		hand[4] = Card{Value: cardValues[valuesIndexes[1]], Suit: ValidSuit()}
+	} else {
+		hand[0] = Card{Value: cardValues[valuesIndexes[1]], Suit: ValidSuit()}
+		for i, suit := range suits {
+			hand[i + 1] = Card{Value: cardValues[valuesIndexes[0]], Suit: suit}
+		}
+	}
+
+	return hand
+}

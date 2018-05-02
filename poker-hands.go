@@ -57,18 +57,15 @@ func main() {
 	fmt.Printf("The first player won %d times\n", firstPlayerWinsCount)
 }
 
-//func main() {
-//	fmt.Println(IsFirstPlayerWinner("5H 5C 6S 7S KD 2C 3S 8S 8D TD"))
-//	fmt.Println(IsFirstPlayerWinner("5D 8C 9S JS AC 2C 5C 7D 8S QH"))
-//	fmt.Println(IsFirstPlayerWinner("2D 9C AS AH AC 3D 6D 7D TD QD"))
-//	fmt.Println(IsFirstPlayerWinner("4D 6S 9H QH QC 3D 6D 7H QD QS"))
-//	fmt.Println(IsFirstPlayerWinner("2H 2D 4C 4D 4S 3C 3D 3S 9S 9D"))
-//}
-
 func createChecker(input chan string, output chan bool) {
 	go func() {
 		for {
-			output <- IsFirstPlayerWinner(<- input)
+			result, err := IsFirstPlayerWinner(<- input)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			output <- result
 		}
 	}()
 }

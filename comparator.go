@@ -2,20 +2,19 @@ package main
 
 import (
 	"strings"
-	"log"
 )
 
-func IsFirstPlayerWinner(hands string) bool {
+func IsFirstPlayerWinner(hands string) (bool, error) {
 	first, second, err := ParseHands(hands)
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 
 	firstCombinationRank, firstReordered := GetCombination(first)
 	secondCombinationRank, secondReordered := GetCombination(second)
 
 	if firstCombinationRank != secondCombinationRank {
-		return firstCombinationRank < secondCombinationRank
+		return firstCombinationRank < secondCombinationRank, nil
 	}
 
 	for i, card := range firstReordered {
@@ -23,11 +22,11 @@ func IsFirstPlayerWinner(hands string) bool {
 		secondIndex := strings.Index(CardValues, secondReordered[i].Value)
 
 		if firstIndex != secondIndex {
-			return firstIndex < secondIndex
+			return firstIndex < secondIndex, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func GetCombination(hand Hand) (int, Hand) {

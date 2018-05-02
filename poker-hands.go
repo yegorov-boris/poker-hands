@@ -9,6 +9,7 @@ import (
 
 type Card struct {Suit, Value string}
 type Hand [5]Card
+type EitherBool struct {Left bool; Right error}
 
 func main() {
 	resp, errGet := http.Get(Url)
@@ -22,12 +23,12 @@ func main() {
 	defer resp.Body.Close()
 
 	var inputs [MaxChunkSize]chan string
-	var outputs [MaxChunkSize]chan bool
+	var outputs [MaxChunkSize]chan EitherBool
 
 	for i := range inputs {
 		inputs[i] = make(chan string)
-		outputs[i] = make(chan bool)
-		createChecker(inputs[i], outputs[i]);
+		outputs[i] = make(chan EitherBool)
+		CreateChecker(inputs[i], outputs[i]);
 	}
 
 	scanner := bufio.NewScanner(resp.Body)
@@ -48,7 +49,11 @@ func main() {
 		}
 
 		for i := 0; i < currentChunkSize; i++ {
-			if <- outputs[i] {
+			result := <- outputs[i]
+			if result.Right != nil {
+				log.Fatal(result.Right)
+			}
+			if result.Left {
 				firstPlayerWinsCount++
 			}
 		}
@@ -57,15 +62,15 @@ func main() {
 	fmt.Printf("The first player won %d times\n", firstPlayerWinsCount)
 }
 
-func createChecker(input chan string, output chan bool) {
+func CreateChecker(input chan string, output chan EitherBool) {
 	go func() {
 		for {
 			result, err := IsFirstPlayerWinner(<- input)
-			if err != nil {
-				log.Fatal(err)
+			if err == nil {
+				output <- EitherBool{Left: result}
+			} else {
+				output <- EitherBool{Right: err}
 			}
-
-			output <- result
 		}
 	}()
 }

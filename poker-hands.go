@@ -22,14 +22,7 @@ func main() {
 
 	defer resp.Body.Close()
 
-	var inputs [MaxChunkSize]chan string
-	var outputs [MaxChunkSize]chan EitherBool
-
-	for i := range inputs {
-		inputs[i] = make(chan string)
-		outputs[i] = make(chan EitherBool)
-		CreateChecker(inputs[i], outputs[i]);
-	}
+	inputs, outputs := CreateCheckers(MaxChunkSize)
 
 	scanner := bufio.NewScanner(resp.Body)
 	notEof := true
@@ -62,15 +55,25 @@ func main() {
 	fmt.Printf("The first player won %d times\n", firstPlayerWinsCount)
 }
 
-func CreateChecker(input chan string, output chan EitherBool) {
-	go func() {
-		for {
-			result, err := IsFirstPlayerWinner(<- input)
-			if err == nil {
-				output <- EitherBool{Left: result}
-			} else {
-				output <- EitherBool{Right: err}
+func CreateCheckers(chunkSize int) ([]chan string, []chan EitherBool) {
+	var inputs []chan string
+	var outputs []chan EitherBool
+	for i := 0; i < chunkSize; i++ {
+		input := make(chan string)
+		output := make(chan EitherBool)
+		inputs = append(inputs, input)
+		outputs = append(outputs, output)
+		go func() {
+			for {
+				result, err := IsFirstPlayerWinner(<- input)
+				if err == nil {
+					output <- EitherBool{Left: result}
+				} else {
+					output <- EitherBool{Right: err}
+				}
 			}
-		}
-	}()
+		}()
+	}
+
+	return inputs, outputs
 }

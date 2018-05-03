@@ -10,6 +10,10 @@ import (
 type Card struct {Suit, Value string}
 type Hand [5]Card
 type EitherBool struct {Left bool; Right error}
+type Scanner interface {
+	Scan() bool
+	Text() string
+}
 
 func main() {
 	resp, errGet := http.Get(Url)
@@ -22,34 +26,9 @@ func main() {
 
 	defer resp.Body.Close()
 
-	inputs, outputs := CreateCheckers(MaxChunkSize)
-
-	scanner := bufio.NewScanner(resp.Body)
-	notEof := true
-	firstPlayerWinsCount := 0;
-
-	for notEof {
-		currentChunkSize := 0;
-
-		for i := range inputs {
-			if !scanner.Scan() {
-				notEof = false
-				break
-			}
-
-			inputs[i] <- scanner.Text()
-			currentChunkSize++
-		}
-
-		for i := 0; i < currentChunkSize; i++ {
-			result := <- outputs[i]
-			if result.Right != nil {
-				log.Fatal(result.Right)
-			}
-			if result.Left {
-				firstPlayerWinsCount++
-			}
-		}
+	firstPlayerWinsCount, errCount := CountWins(bufio.NewScanner(resp.Body), MaxChunkSize)
+	if errCount != nil {
+		log.Fatal(errCount)
 	}
 
 	fmt.Printf("The first player won %d times\n", firstPlayerWinsCount)
@@ -76,4 +55,44 @@ func CreateCheckers(chunkSize int) ([]chan string, []chan EitherBool) {
 	}
 
 	return inputs, outputs
+}
+
+func ScanChunk(scanner Scanner, size int) (bool, []string) {
+	var chunk []string
+	for i := 0; i < size; i++ {
+		if !scanner.Scan() {
+			return true, chunk
+		}
+
+		chunk = append(chunk, scanner.Text())
+	}
+
+	return false, chunk
+}
+
+func CountWins(scanner Scanner, chunkSize int) (int, error) {
+	firstPlayerWinsCount := 0
+	inputs, outputs := CreateCheckers(chunkSize)
+
+	for {
+		eof, chunk := ScanChunk(scanner, chunkSize)
+
+		for i, cardString := range chunk {
+			inputs[i] <- cardString
+		}
+
+		for i := range chunk {
+			result := <- outputs[i]
+			if result.Right != nil {
+				return 0, result.Right
+			}
+			if result.Left {
+				firstPlayerWinsCount++
+			}
+		}
+
+		if eof {
+			return firstPlayerWinsCount, nil
+		}
+	}
 }

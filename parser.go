@@ -1,9 +1,9 @@
 package main
 
 import (
-	"strings"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 func ParseHands(hands string) (Hand, Hand, error) {
@@ -27,7 +27,7 @@ func ParseHands(hands string) (Hand, Hand, error) {
 		if i < 5 {
 			first[i] = card
 		} else {
-			second[i % 5] = card
+			second[i%5] = card
 		}
 
 	}
@@ -59,17 +59,17 @@ func ParseCardString(cardString string) (Card, error) {
 	length := len(cardString)
 
 	if length != 2 {
-		return  Card{}, errors.New("failed to parse an encoded card: wrong length")
+		return Card{}, errors.New("failed to parse an encoded card: wrong length")
 	}
 
 	suit := cardString[1:]
 	value := cardString[:1]
 
 	if !strings.Contains(Suits, suit) {
-		return  Card{}, errors.New("failed to parse an encoded card: wrong suit")
+		return Card{}, errors.New("failed to parse an encoded card: wrong suit")
 	}
 	if !strings.Contains(CardValues, value) {
-		return  Card{}, errors.New("failed to parse an encoded card: wrong card value")
+		return Card{}, errors.New("failed to parse an encoded card: wrong card value")
 	}
 
 	return Card{Suit: suit, Value: value}, nil

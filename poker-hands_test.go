@@ -1,14 +1,14 @@
 package main
 
 import (
-	"testing"
-	"log"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"math/rand"
+	"testing"
 )
 
 type ScannerSpy struct {
-	C int
+	C          int
 	ShouldFail bool
 }
 
@@ -26,40 +26,40 @@ func (s *ScannerSpy) Text() string {
 	if s.ShouldFail {
 		return RandomString(20, 50)
 	}
-	return dummy[s.C - 1]
+	return dummy[s.C-1]
 }
 
 func TestCreateCheckers(t *testing.T) {
 	log.Println("CreateCheckers")
 
 	log.Println("should create goroutines that take a string and return an error when something fails")
-	func () {
+	func() {
 		inputs, outputs := CreateCheckers(MaxChunkSize)
 		i := rand.Intn(MaxChunkSize)
 
 		inputs[i] <- RandomString(20, 50)
-		result := <- outputs[i]
+		result := <-outputs[i]
 		assert.Error(t, result.Right)
 	}()
 
 	log.Println("should create goroutines that take a string and return true when the first player wins")
-	func () {
+	func() {
 		inputs, outputs := CreateCheckers(MaxChunkSize)
 		i := rand.Intn(MaxChunkSize)
 
 		inputs[i] <- "5D 8C 9S JS AC 2C 5C 7D 8S QH"
-		result := <- outputs[i]
+		result := <-outputs[i]
 		assert.Nil(t, result.Right)
 		assert.True(t, result.Left)
 	}()
 
 	log.Println("should create goroutines that take a string and return false when the second player wins")
-	func () {
+	func() {
 		inputs, outputs := CreateCheckers(MaxChunkSize)
 		i := rand.Intn(MaxChunkSize)
 
 		inputs[i] <- "5H 5C 6S 7S KD 2C 3S 8S 8D TD"
-		result := <- outputs[i]
+		result := <-outputs[i]
 		assert.Nil(t, result.Right)
 		assert.False(t, result.Left)
 	}()
@@ -69,7 +69,7 @@ func TestCountWins(t *testing.T) {
 	log.Println("CountWins")
 
 	log.Println("should fail when a checker fails")
-	func () {
+	func() {
 		scannerSpy := ScannerSpy{0, true}
 		result, err := CountWins(&scannerSpy, 2)
 		assert.Equal(t, 0, result)
@@ -77,7 +77,7 @@ func TestCountWins(t *testing.T) {
 	}()
 
 	log.Println("should count the first player's wins")
-	func () {
+	func() {
 		scannerSpy := ScannerSpy{0, false}
 		result, err := CountWins(&scannerSpy, 2)
 		assert.Nil(t, err)

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"testing"
-	"log"
 	"github.com/stretchr/testify/assert"
+	"log"
+	"testing"
 )
 
 func TestIsOnePair(t *testing.T) {
@@ -201,7 +201,7 @@ func TestIsRoyalFlush(t *testing.T) {
 	checkStraightFlush(t, IsRoyalFlush, false)
 
 	log.Println("should return true and a hand when the hand is a royal flush")
-	func () {
+	func() {
 		handRoyalFlush := HandRoyalFlush()
 
 		isRoyalFlush, actualHand := IsRoyalFlush(handRoyalFlush)
@@ -210,14 +210,14 @@ func TestIsRoyalFlush(t *testing.T) {
 	}()
 }
 
-func checkNoCombinations(t *testing.T, checker func (Hand) (bool, Hand)) {
+func checkNoCombinations(t *testing.T, checker func(Hand) (bool, Hand)) {
 	handNoPairs := HandNoPairs()
 	actualResult, actualHand := checker(handNoPairs)
 	assert.Equal(t, false, actualResult)
 	assert.Equal(t, handNoPairs, actualHand)
 }
 
-func checkOnePair(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkOnePair(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handWithPair := HandWithPair()
 
 	if expectedResult {
@@ -233,7 +233,7 @@ func checkOnePair(t *testing.T, checker func (Hand) (bool, Hand), expectedResult
 	}
 }
 
-func checkTwoPairs(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkTwoPairs(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handWithPairs := HandWithTwoPairs()
 
 	if expectedResult {
@@ -249,7 +249,7 @@ func checkTwoPairs(t *testing.T, checker func (Hand) (bool, Hand), expectedResul
 	}
 }
 
-func checkThree(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkThree(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handWithThree := HandWithThree()
 
 	if expectedResult {
@@ -265,14 +265,14 @@ func checkThree(t *testing.T, checker func (Hand) (bool, Hand), expectedResult b
 	}
 }
 
-func checkStraight(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkStraight(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handStraight := HandStraight()
 	isStraight, actualHand := checker(handStraight)
 	assert.Equal(t, expectedResult, isStraight)
 	assert.Equal(t, handStraight, actualHand)
 }
 
-func checkFlush(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkFlush(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handFlush := HandFlush()
 
 	isFlush, actualHand := checker(handFlush)
@@ -281,7 +281,7 @@ func checkFlush(t *testing.T, checker func (Hand) (bool, Hand), expectedResult b
 
 }
 
-func checkFullHouse(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkFullHouse(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handFullHouse := HandFullHouse()
 	expectedHand := ReorderFullHouse(handFullHouse)
 
@@ -290,7 +290,7 @@ func checkFullHouse(t *testing.T, checker func (Hand) (bool, Hand), expectedResu
 	assert.Equal(t, expectedHand, actualHand)
 }
 
-func checkFour(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkFour(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handFour := HandFour()
 	expectedHand := ReorderFour(handFour)
 
@@ -299,7 +299,7 @@ func checkFour(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bo
 	assert.Equal(t, expectedHand, actualHand)
 }
 
-func checkStraightFlush(t *testing.T, checker func (Hand) (bool, Hand), expectedResult bool) {
+func checkStraightFlush(t *testing.T, checker func(Hand) (bool, Hand), expectedResult bool) {
 	handStraightFlush := HandStraightFlush()
 
 	isStraightFlush, actualHand := checker(handStraightFlush)

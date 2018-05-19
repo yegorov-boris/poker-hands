@@ -1,14 +1,14 @@
 package main
 
 import (
-	"testing"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"math/rand"
-	"github.com/stretchr/testify/assert"
 	"strings"
+	"testing"
 )
 
-var randomHandGenerators = []func () Hand {
+var randomHandGenerators = []func() Hand{
 	HandRoyalFlush,
 	HandStraightFlush,
 	HandFour,
@@ -30,7 +30,6 @@ func TestGetCombination(t *testing.T) {
 	hand := randomHandGenerators[expectedIndex]()
 	expectedHand := reorderHand(expectedIndex, hand)
 
-
 	actualIndex, actualHand := GetCombination(hand)
 	assert.Equal(t, expectedIndex, actualIndex)
 	assert.Equal(t, expectedHand, actualHand)
@@ -40,16 +39,16 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 	log.Println("IsFirstPlayerWinner")
 
 	log.Println("should fail when the parsing fails")
-	func () {
+	func() {
 		_, err := IsFirstPlayerWinner(RandomString(30, 50))
 		assert.Error(t, err)
 	}()
 
 	log.Println("should return true when the first player's combination is stronger")
-	func () {
+	func() {
 		firstCombinationIndex := rand.Intn(len(randomHandGenerators) - 1)
 		secondCombinationIndex := firstCombinationIndex + 1 +
-			rand.Intn(len(randomHandGenerators) - firstCombinationIndex - 1)
+			rand.Intn(len(randomHandGenerators)-firstCombinationIndex-1)
 
 		actual, err := IsFirstPlayerWinner(validHandsString(firstCombinationIndex, secondCombinationIndex))
 		assert.Nil(t, err)
@@ -57,8 +56,8 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 	}()
 
 	log.Println("should return false when the second player's combination is stronger")
-	func () {
-		firstCombinationIndex := 1 + rand.Intn(len(randomHandGenerators) - 1)
+	func() {
+		firstCombinationIndex := 1 + rand.Intn(len(randomHandGenerators)-1)
 		secondCombinationIndex := rand.Intn(firstCombinationIndex)
 
 		actual, err := IsFirstPlayerWinner(validHandsString(firstCombinationIndex, secondCombinationIndex))
@@ -68,7 +67,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 
 	log.Println("should return true when the combinations have equal ranks ",
 		"but the first player's cards are stronger")
-	func () {
+	func() {
 		actual, err := IsFirstPlayerWinner("5D 8C 9S JS AC 2C 5C 7D 8S QH")
 		assert.Nil(t, err)
 		assert.True(t, actual)
@@ -76,7 +75,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 
 	log.Println("should return false when the combinations have equal ranks ",
 		"but the first player's cards are not stronger")
-	func () {
+	func() {
 		actual, err := IsFirstPlayerWinner("5H 5C 6S 7S KD 2C 3S 8S 8D TD")
 		assert.Nil(t, err)
 		assert.False(t, actual)

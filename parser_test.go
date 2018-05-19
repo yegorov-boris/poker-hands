@@ -1,18 +1,18 @@
 package main
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
 	"log"
-	"strings"
 	"math/rand"
+	"strings"
+	"testing"
 )
 
 func TestParseCardString(t *testing.T) {
 	log.Println("ParseCardString")
 
 	log.Println("should parse a valid card string")
-	expected := Card {Suit: "D", Value: "9"}
+	expected := Card{Suit: "D", Value: "9"}
 	actual, _ := ParseCardString("9D")
 	assert.Equal(t, expected, actual)
 

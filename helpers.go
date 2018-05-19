@@ -2,22 +2,22 @@ package main
 
 import (
 	"math/rand"
-	"strings"
 	"sort"
+	"strings"
 )
 
 func RandomString(minLength int, maxLength int) string {
-	length := minLength + rand.Intn(maxLength - minLength + 1)
+	length := minLength + rand.Intn(maxLength-minLength+1)
 	var randomBytes []byte
 	for i := 0; i < length; i++ {
-		randomBytes = append(randomBytes, byte(32 + rand.Intn(95)))
+		randomBytes = append(randomBytes, byte(32+rand.Intn(95)))
 	}
 
 	return string(randomBytes)
 }
 
 func RandomStringWithout(minLength int, maxLength int, exceptions string) string {
-	length := minLength + rand.Intn(maxLength - minLength + 1)
+	length := minLength + rand.Intn(maxLength-minLength+1)
 	var randomBytes []byte
 	for i := 0; i < length; {
 		randomByte := byte(32 + rand.Intn(95))
@@ -75,7 +75,7 @@ func SortedHand(exceptions []Card) Hand {
 	for _, value := range strings.Split(CardValues, Separator) {
 		for _, suit := range strings.Split(Suits, Separator) {
 			card := Card{Value: value, Suit: suit}
-			i := 0;
+			i := 0
 			for ; i < exceptionsLength; i++ {
 				if card == exceptions[i] {
 					break
@@ -104,7 +104,7 @@ func HandNoPairs() Hand {
 	sort.Ints(indexes)
 
 	// check if it's not straight
-	if indexes[4] == indexes[0] + 4 {
+	if indexes[4] == indexes[0]+4 {
 		return HandNoPairs()
 	}
 
@@ -125,9 +125,9 @@ func HandWithPair() Hand {
 	i := rand.Intn(4)
 	suits := strings.Split(Suits, Separator)
 	hand := HandNoPairs()
-	hand[i + 1] = Card{
+	hand[i+1] = Card{
 		Value: hand[i].Value,
-		Suit: PickOneWithout(suits, []string{hand[i].Suit}),
+		Suit:  PickOneWithout(suits, []string{hand[i].Suit}),
 	}
 
 	// check if it's not flush
@@ -143,7 +143,7 @@ func HandWithTwoPairs() Hand {
 
 	i := 0
 	for ; i < 4; i++ {
-		if hand[i].Value == hand[i + 1].Value {
+		if hand[i].Value == hand[i+1].Value {
 			break
 		}
 	}
@@ -159,9 +159,9 @@ func HandWithTwoPairs() Hand {
 		j = rand.Intn(2)
 	}
 
-	hand[j + 1] = Card{
+	hand[j+1] = Card{
 		Value: hand[j].Value,
-		Suit: PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit}),
+		Suit:  PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit}),
 	}
 
 	// check if it's not flush
@@ -177,20 +177,20 @@ func HandWithThree() Hand {
 
 	i := 0
 	for ; i < 4; i++ {
-		if hand[i].Value == hand[i + 1].Value {
+		if hand[i].Value == hand[i+1].Value {
 			break
 		}
 	}
 
 	card := Card{
 		Value: hand[i].Value,
-		Suit: PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit, hand[i + 1].Suit}),
+		Suit:  PickOneWithout(strings.Split(Suits, Separator), []string{hand[i].Suit, hand[i+1].Suit}),
 	}
 
 	if i == 3 {
 		hand[2] = card
 	} else {
-		hand[i + 2] = card
+		hand[i+2] = card
 	}
 
 	// check if it's not flush
@@ -206,7 +206,7 @@ func HandStraight() Hand {
 	i := rand.Intn(len(cardValues) - 4)
 
 	var hand Hand
-	for j, value := range cardValues[i:i + 5] {
+	for j, value := range cardValues[i : i+5] {
 		hand[j] = Card{Value: value, Suit: ValidSuit()}
 	}
 
@@ -245,14 +245,14 @@ func HandFullHouse() Hand {
 			hand[i] = Card{Value: cardValues[valuesIndexes[0]], Suit: suits[suitsIndexes[i]]}
 		}
 		for i := 0; i < 2; i++ {
-			hand[i + 3] = Card{Value: cardValues[valuesIndexes[1]], Suit: suits[suitsIndexes[i]]}
+			hand[i+3] = Card{Value: cardValues[valuesIndexes[1]], Suit: suits[suitsIndexes[i]]}
 		}
 	} else {
 		for i := 0; i < 2; i++ {
 			hand[i] = Card{Value: cardValues[valuesIndexes[1]], Suit: suits[suitsIndexes[i]]}
 		}
 		for i := 0; i < 3; i++ {
-			hand[i + 2] = Card{Value: cardValues[valuesIndexes[0]], Suit: suits[suitsIndexes[i]]}
+			hand[i+2] = Card{Value: cardValues[valuesIndexes[0]], Suit: suits[suitsIndexes[i]]}
 		}
 	}
 
@@ -273,7 +273,7 @@ func HandFour() Hand {
 	} else {
 		hand[0] = Card{Value: cardValues[valuesIndexes[1]], Suit: ValidSuit()}
 		for i, suit := range suits {
-			hand[i + 1] = Card{Value: cardValues[valuesIndexes[0]], Suit: suit}
+			hand[i+1] = Card{Value: cardValues[valuesIndexes[0]], Suit: suit}
 		}
 	}
 
@@ -286,7 +286,7 @@ func HandStraightFlush() Hand {
 	suit := PickOne(strings.Split(Suits, Separator))
 
 	var hand Hand
-	for j, value := range cardValues[i:i + 5] {
+	for j, value := range cardValues[i : i+5] {
 		hand[j] = Card{Value: value, Suit: suit}
 	}
 
@@ -306,17 +306,17 @@ func HandRoyalFlush() Hand {
 func ReorderOnePair(hand Hand) Hand {
 	i := 0
 	for ; i < 4; i++ {
-		if hand[i].Value == hand[i + 1].Value {
+		if hand[i].Value == hand[i+1].Value {
 			break
 		}
 	}
 
-	expectedHand := Hand{hand[i], hand[i + 1]}
+	expectedHand := Hand{hand[i], hand[i+1]}
 	for k, card := range hand[:i] {
-		expectedHand[2 + k] = card
+		expectedHand[2+k] = card
 	}
-	for k, card := range hand[i + 2:] {
-		expectedHand[i + 2 + k] = card
+	for k, card := range hand[i+2:] {
+		expectedHand[i+2+k] = card
 	}
 
 	return expectedHand
@@ -325,21 +325,21 @@ func ReorderOnePair(hand Hand) Hand {
 func ReorderTwoPairs(hand Hand) Hand {
 	i := 0
 	for ; i < 4; i++ {
-		if hand[i].Value == hand[i + 1].Value {
+		if hand[i].Value == hand[i+1].Value {
 			break
 		}
 	}
 
 	j := i + 2
 	for ; j < 4; j++ {
-		if hand[j].Value == hand[j + 1].Value {
+		if hand[j].Value == hand[j+1].Value {
 			break
 		}
 	}
 
-	expectedHand := Hand{hand[i], hand[i + 1], hand[j], hand[j + 1]}
-	for k :=0; k < 5; k++ {
-		if (k < i) || (k > j + 1) || ((k > i + 1) && (k < j)) {
+	expectedHand := Hand{hand[i], hand[i+1], hand[j], hand[j+1]}
+	for k := 0; k < 5; k++ {
+		if (k < i) || (k > j+1) || ((k > i+1) && (k < j)) {
 			expectedHand[4] = hand[k]
 		}
 	}
@@ -350,14 +350,14 @@ func ReorderTwoPairs(hand Hand) Hand {
 func ReorderThree(hand Hand) Hand {
 	i := 0
 	for ; i < 3; i++ {
-		if (hand[i].Value == hand[i + 1].Value) && (hand[i].Value == hand[i + 2].Value) {
+		if (hand[i].Value == hand[i+1].Value) && (hand[i].Value == hand[i+2].Value) {
 			break
 		}
 	}
 
-	expectedHand := Hand{hand[i], hand[i + 1], hand[i + 2]}
+	expectedHand := Hand{hand[i], hand[i+1], hand[i+2]}
 	for j := 0; j < i; j++ {
-		expectedHand[j + 3] = hand[j]
+		expectedHand[j+3] = hand[j]
 	}
 	for j := i + 3; j < 5; j++ {
 		expectedHand[j] = hand[j]
@@ -370,7 +370,7 @@ func ReorderFullHouse(hand Hand) Hand {
 	if hand[0].Value != hand[2].Value {
 		return Hand{hand[2], hand[3], hand[4], hand[0], hand[1]}
 	}
-	
+
 	return hand
 }
 
@@ -378,6 +378,6 @@ func ReorderFour(hand Hand) Hand {
 	if hand[0].Value != hand[3].Value {
 		return Hand{hand[1], hand[2], hand[3], hand[4], hand[0]}
 	}
-	
+
 	return hand
 }

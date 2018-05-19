@@ -1,15 +1,18 @@
 package main
 
 import (
-	"net/http"
-	"log"
 	"bufio"
 	"fmt"
+	"log"
+	"net/http"
 )
 
-type Card struct {Suit, Value string}
+type Card struct{ Suit, Value string }
 type Hand [5]Card
-type EitherBool struct {Left bool; Right error}
+type EitherBool struct {
+	Left  bool
+	Right error
+}
 type Scanner interface {
 	Scan() bool
 	Text() string
@@ -21,7 +24,7 @@ func main() {
 		log.Fatalf("Failed to download the combinations: %s\n", errGet)
 	}
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Failed to download the combinations. Status %d\n", resp.StatusCode);
+		log.Fatalf("Failed to download the combinations. Status %d\n", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
@@ -44,7 +47,7 @@ func CreateCheckers(chunkSize int) ([]chan string, []chan EitherBool) {
 		outputs = append(outputs, output)
 		go func() {
 			for {
-				result, err := IsFirstPlayerWinner(<- input)
+				result, err := IsFirstPlayerWinner(<-input)
 				if err == nil {
 					output <- EitherBool{Left: result}
 				} else {
@@ -82,7 +85,7 @@ func CountWins(scanner Scanner, chunkSize int) (int, error) {
 		}
 
 		for i := range chunk {
-			result := <- outputs[i]
+			result := <-outputs[i]
 			if result.Right != nil {
 				return 0, result.Right
 			}

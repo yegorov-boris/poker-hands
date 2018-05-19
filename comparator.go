@@ -30,7 +30,7 @@ func IsFirstPlayerWinner(hands string) (bool, error) {
 }
 
 func GetCombination(hand Hand) (int, Hand) {
-	combinationCheckers := []func(Hand) (bool, Hand) {
+	combinationCheckers := []func(Hand) (bool, Hand){
 		IsRoyalFlush,
 		IsStraightFlush,
 		IsFourKind,

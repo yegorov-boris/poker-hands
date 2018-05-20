@@ -53,49 +53,8 @@ func PickOneWithout(slice []string, exceptions []string) string {
 	return diff[rand.Intn(len(diff))]
 }
 
-func ValidCardValue() string {
-	return PickOne(strings.Split(CardValues, Separator))
-}
-
-func InvalidCardValue() string {
-	return RandomStringWithout(1, 1, CardValues)
-}
-
 func ValidSuit() string {
 	return PickOne(strings.Split(Suits, Separator))
-}
-
-func InvalidSuit() string {
-	return RandomStringWithout(1, 1, Suits)
-}
-
-func SortedHand(exceptions []Card) Hand {
-	var deck []Card
-	exceptionsLength := len(exceptions)
-	for _, value := range strings.Split(CardValues, Separator) {
-		for _, suit := range strings.Split(Suits, Separator) {
-			card := Card{Value: value, Suit: suit}
-			i := 0
-			for ; i < exceptionsLength; i++ {
-				if card == exceptions[i] {
-					break
-				}
-			}
-			if i == exceptionsLength {
-				deck = append(deck, card)
-			}
-		}
-	}
-
-	indexes := rand.Perm(len(deck))[:5]
-	sort.Ints(indexes)
-
-	var sortedHand Hand
-	for i, index := range indexes {
-		sortedHand[i] = deck[index]
-	}
-
-	return sortedHand
 }
 
 func HandNoPairs() Hand {

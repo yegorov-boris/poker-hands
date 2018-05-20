@@ -1,80 +1,198 @@
 package main
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"log"
 	"math/rand"
 	"strings"
 	"testing"
 )
 
+func TestSplitHandsString(t *testing.T) {
+	log.Println("SplitHandsString")
+
+	log.Println("should split a string by a separator")
+	func() {
+		expected := []string{}
+		separator := RandomString(1, 3)
+		for i := 0; i < 10; i++ {
+			expected = append(expected, RandomStringWithout(1, 3, separator))
+		}
+
+		parser := CardStringParser{Separator: separator}
+		actual, err := parser.SplitHandsString(strings.Join(expected, separator))
+		assert.Nil(t, err)
+		assert.Equal(t, expected, actual)
+	}()
+
+	log.Println("should fail when the number of the substrings doesn't equal 10")
+	func() {
+		parser := CardStringParser{Separator: RandomString(1, 3)}
+		_, err := parser.SplitHandsString(RandomString(1, 3))
+		assert.Errorf(t, err, "failed to parse a line with hands: wrong length")
+	}()
+}
+
 func TestParseCardString(t *testing.T) {
 	log.Println("ParseCardString")
 
 	log.Println("should parse a valid card string")
-	expected := Card{Suit: "D", Value: "9"}
-	actual, _ := ParseCardString("9D")
-	assert.Equal(t, expected, actual)
+	func() {
+		suit := RandomString(1, 1)
+		cardValue := RandomString(1, 1)
+		expected := Card{Suit: suit, Value: cardValue}
+		cardString := strings.Join([]string{cardValue, suit}, "")
+		parser := CardStringParser{
+			Suits:      suit,
+			CardValues: cardValue,
+		}
+
+		actual, err := parser.ParseCardString(cardString)
+		assert.Nil(t, err)
+		assert.Equal(t, expected, actual)
+	}()
 
 	log.Println("should fail when a card string is longer than 2 bytes")
-	_, errTooLong := ParseCardString(RandomString(3, 5))
-	assert.Errorf(t, errTooLong, "failed to parse an encoded card: wrong length")
+	func() {
+		parser := CardStringParser{}
+
+		_, err := parser.ParseCardString(RandomString(3, 5))
+		assert.Errorf(t, err, "failed to parse an encoded card: wrong length")
+	}()
 
 	log.Println("should fail when a card string is shorter than 2 bytes")
-	_, errTooShort := ParseCardString(RandomString(0, 1))
-	assert.Errorf(t, errTooShort, "failed to parse an encoded card: wrong length")
+	func() {
+		parser := CardStringParser{}
+
+		_, err := parser.ParseCardString(RandomString(0, 1))
+		assert.Errorf(t, err, "failed to parse an encoded card: wrong length")
+	}()
 
 	log.Println("should fail when a card string has invalid suit")
-	_, errInvalidSuit := ParseCardString(strings.Join([]string{ValidCardValue(), InvalidSuit()}, ""))
-	assert.Errorf(t, errInvalidSuit, "failed to parse an encoded card: wrong suit")
+	func() {
+		suit := RandomString(1, 1)
+		cardValue := RandomString(1, 1)
+		cardString := strings.Join([]string{cardValue, suit}, "")
+		parser := CardStringParser{
+			Suits:      RandomStringWithout(1, 1, suit),
+			CardValues: cardValue,
+		}
+
+		_, err := parser.ParseCardString(cardString)
+		assert.Errorf(t, err, "failed to parse an encoded card: wrong suit")
+	}()
 
 	log.Println("should fail when a card string has invalid card value")
-	_, errInvalidCardValue := ParseCardString(strings.Join([]string{InvalidCardValue(), ValidSuit()}, ""))
-	assert.Errorf(t, errInvalidCardValue, "failed to parse an encoded card: wrong card value")
+	func() {
+		suit := RandomString(1, 1)
+		cardValue := RandomString(1, 1)
+		cardString := strings.Join([]string{cardValue, suit}, "")
+		parser := CardStringParser{
+			Suits:      suit,
+			CardValues: RandomStringWithout(1, 1, cardString),
+		}
+
+		_, err := parser.ParseCardString(cardString)
+		assert.Errorf(t, err, "failed to parse an encoded card: wrong card value")
+	}()
 }
 
 func TestSortByValue(t *testing.T) {
 	log.Println("SortByValue")
 
 	log.Println("should sort a hand by card values")
-	hand := SortedHand([]Card{})
-	unsortedHand := Hand{}
-	for i, index := range rand.Perm(5) {
-		unsortedHand[i] = hand[index]
+
+	separator := RandomString(1, 1)
+	cardValues := []string{}
+	for i := 0; i < 5; i++ {
+		cardValues = append(cardValues, RandomStringWithout(1, 1, separator))
 	}
 
-	for i, card := range SortByValue(unsortedHand) {
-		assert.Equal(t, hand[i].Value, card.Value)
+	unsortedHand := Hand{}
+	for i, index := range rand.Perm(5) {
+		unsortedHand[i] = Card{
+			Suit:  RandomString(1, 1),
+			Value: cardValues[index],
+		}
+	}
+
+	parser := CardStringParser{
+		CardValues: strings.Join(cardValues, separator),
+		Separator:  separator,
+	}
+
+	for i, card := range parser.SortByValue(unsortedHand) {
+		assert.Equal(t, cardValues[i], card.Value)
 	}
 }
 
 func TestParseHands(t *testing.T) {
 	log.Println("ParseHands")
 
-	expectedFirst := SortedHand([]Card{})
-	expectedSecond := SortedHand(expectedFirst[:])
-	var cardStrings []string
-	for _, card := range expectedFirst {
-		cardStrings = append(cardStrings, strings.Join([]string{card.Value, card.Suit}, ""))
-	}
-	for _, card := range expectedSecond {
-		cardStrings = append(cardStrings, strings.Join([]string{card.Value, card.Suit}, ""))
-	}
-
 	log.Println("should parse a string which contains two hands")
-	actualFirst, actualSecond, _ := ParseHands(strings.Join(cardStrings, Separator))
-	assert.Equal(t, expectedFirst, actualFirst)
-	assert.Equal(t, expectedSecond, actualSecond)
+	func() {
+		fakeCardStrings := strings.Split("0123456789", "")
+		fakeCard := Card{Value: "1", Suit: "a"}
+		fakeHand := Hand{fakeCard, fakeCard, fakeCard, fakeCard, fakeCard}
+		parser := &mockCardStringParser{}
+		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+			Return(fakeCardStrings, nil).
+			Once().
+			On("ParseCardString", mock.AnythingOfType("string")).
+			Return(fakeCard, nil).
+			Times(10).
+			On("SortByValue", fakeHand).
+			Return(fakeHand).
+			Twice()
 
-	log.Println("should fail when the string is not a ten valid encoded cards (e.g. 9D) separated by a whitespace")
-	_, _, errWrongLength := ParseHands(RandomString(10, 50))
-	assert.Errorf(t, errWrongLength, "failed to parse a line with hands: wrong length")
+		first, second, err := ParseHands(parser, RandomString(1, 3))
+		assert.Nil(t, err)
+		assert.Equal(t, fakeHand, first)
+		assert.Equal(t, fakeHand, second)
+		parser.AssertExpectations(t)
+	}()
 
-	log.Println("should fail when the string contains duplicated encoded cards")
-	_, _, errNotUnique := ParseHands(strings.Join(append(cardStrings[:9], cardStrings[0]), Separator))
-	assert.Errorf(t, errNotUnique, "failed to parse a line with hands: %s is not unique", cardStrings[0])
+	log.Println("should fail when the SplitHandsString fails")
+	func() {
+		msg := RandomString(10, 20)
+		parser := &mockCardStringParser{}
+		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+			Return([]string{}, errors.New(msg)).
+			Once()
 
-	log.Println("should fail when the card string parser fails")
-	_, _, errCardString := ParseHands(strings.Join(append(cardStrings[:9], RandomString(1, 5)), Separator))
-	assert.Error(t, errCardString)
+		_, _, err := ParseHands(parser, RandomString(1, 3))
+		assert.Errorf(t, err, msg)
+		parser.AssertExpectations(t)
+	}()
+
+	log.Println("should fail when the cards string contains duplicated encoded cards")
+	func() {
+		fakeCardString := RandomString(1, 3)
+		parser := &mockCardStringParser{}
+		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+			Return([]string{fakeCardString}, nil).
+			Once()
+
+		fakeCardsString := strings.Join([]string{fakeCardString, fakeCardString}, " ")
+		_, _, err := ParseHands(parser, fakeCardsString)
+		assert.Errorf(t, err, "failed to parse a line with hands: %s is not unique", fakeCardString)
+		parser.AssertExpectations(t)
+	}()
+
+	log.Println("should fail when the ParseCardString fails")
+	func() {
+		msg := RandomString(10, 20)
+		parser := &mockCardStringParser{}
+		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+			Return([]string{RandomString(1, 3)}, nil).
+			Once().
+			On("ParseCardString", mock.AnythingOfType("string")).
+			Return(Card{}, errors.New(msg))
+
+		_, _, err := ParseHands(parser, RandomString(1, 3))
+		assert.Errorf(t, err, msg)
+		parser.AssertExpectations(t)
+	}()
 }

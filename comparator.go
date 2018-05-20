@@ -5,7 +5,7 @@ import (
 )
 
 func IsFirstPlayerWinner(hands string) (bool, error) {
-	first, second, err := ParseHands(hands)
+	first, second, err := ParseHands(CardStringParser{Suits, CardValues, Separator}, hands)
 	if err != nil {
 		return false, err
 	}

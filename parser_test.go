@@ -21,16 +21,17 @@ func TestSplitHandsString(t *testing.T) {
 			expected = append(expected, RandomStringWithout(1, 3, separator))
 		}
 
-		parser := CardStringParser{Separator: separator}
-		actual, err := parser.SplitHandsString(strings.Join(expected, separator))
+		fakeConfig := config{separator: separator}
+		actual, err := (splitter{config: fakeConfig}).SplitHandsString(strings.Join(expected, separator))
 		assert.Nil(t, err)
 		assert.Equal(t, expected, actual)
 	}()
 
 	log.Println("should fail when the number of the substrings doesn't equal 10")
 	func() {
-		parser := CardStringParser{Separator: RandomString(1, 3)}
-		_, err := parser.SplitHandsString(RandomString(1, 3))
+		separator := RandomString(1, 3)
+		fakeConfig := config{separator: separator}
+		_, err := (splitter{config: fakeConfig}).SplitHandsString(RandomString(1, 3))
 		assert.Errorf(t, err, "failed to parse a line with hands: wrong length")
 	}()
 }
@@ -44,29 +45,25 @@ func TestParseCardString(t *testing.T) {
 		cardValue := RandomString(1, 1)
 		expected := Card{Suit: suit, Value: cardValue}
 		cardString := strings.Join([]string{cardValue, suit}, "")
-		parser := CardStringParser{
-			Suits:      suit,
-			CardValues: cardValue,
+		fakeConfig := config{
+			suits:      suit,
+			cardValues: cardValue,
 		}
 
-		actual, err := parser.ParseCardString(cardString)
+		actual, err := (cardParser{config: fakeConfig}).ParseCardString(cardString)
 		assert.Nil(t, err)
 		assert.Equal(t, expected, actual)
 	}()
 
 	log.Println("should fail when a card string is longer than 2 bytes")
 	func() {
-		parser := CardStringParser{}
-
-		_, err := parser.ParseCardString(RandomString(3, 5))
+		_, err := (cardParser{config: defaultConfig()}).ParseCardString(RandomString(3, 5))
 		assert.Errorf(t, err, "failed to parse an encoded card: wrong length")
 	}()
 
 	log.Println("should fail when a card string is shorter than 2 bytes")
 	func() {
-		parser := CardStringParser{}
-
-		_, err := parser.ParseCardString(RandomString(0, 1))
+		_, err := (cardParser{config: defaultConfig()}).ParseCardString(RandomString(0, 1))
 		assert.Errorf(t, err, "failed to parse an encoded card: wrong length")
 	}()
 
@@ -75,12 +72,12 @@ func TestParseCardString(t *testing.T) {
 		suit := RandomString(1, 1)
 		cardValue := RandomString(1, 1)
 		cardString := strings.Join([]string{cardValue, suit}, "")
-		parser := CardStringParser{
-			Suits:      RandomStringWithout(1, 1, suit),
-			CardValues: cardValue,
+		fakeConfig := config{
+			suits:      RandomStringWithout(1, 1, suit),
+			cardValues: cardValue,
 		}
 
-		_, err := parser.ParseCardString(cardString)
+		_, err := (cardParser{config: fakeConfig}).ParseCardString(cardString)
 		assert.Errorf(t, err, "failed to parse an encoded card: wrong suit")
 	}()
 
@@ -89,12 +86,12 @@ func TestParseCardString(t *testing.T) {
 		suit := RandomString(1, 1)
 		cardValue := RandomString(1, 1)
 		cardString := strings.Join([]string{cardValue, suit}, "")
-		parser := CardStringParser{
-			Suits:      suit,
-			CardValues: RandomStringWithout(1, 1, cardString),
+		fakeConfig := config{
+			suits:      suit,
+			cardValues: RandomStringWithout(1, 1, cardString),
 		}
 
-		_, err := parser.ParseCardString(cardString)
+		_, err := (cardParser{config: fakeConfig}).ParseCardString(cardString)
 		assert.Errorf(t, err, "failed to parse an encoded card: wrong card value")
 	}()
 }
@@ -118,12 +115,12 @@ func TestSortByValue(t *testing.T) {
 		}
 	}
 
-	parser := CardStringParser{
-		CardValues: strings.Join(cardValues, separator),
-		Separator:  separator,
+	fakeConfig := config{
+		cardValues: strings.Join(cardValues, separator),
+		separator:  separator,
 	}
 
-	for i, card := range parser.SortByValue(unsortedHand) {
+	for i, card := range (sorter{config: fakeConfig}).SortByValue(unsortedHand) {
 		assert.Equal(t, cardValues[i], card.Value)
 	}
 }
@@ -136,63 +133,88 @@ func TestParseHands(t *testing.T) {
 		fakeCardStrings := strings.Split("0123456789", "")
 		fakeCard := Card{Value: "1", Suit: "a"}
 		fakeHand := Hand{fakeCard, fakeCard, fakeCard, fakeCard, fakeCard}
-		parser := &mockCardStringParser{}
-		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+
+		fakeSplitter := &mockHandsStringSplitter{}
+		fakeSplitter.On("SplitHandsString", mock.AnythingOfType("string")).
 			Return(fakeCardStrings, nil).
-			Once().
-			On("ParseCardString", mock.AnythingOfType("string")).
+			Once()
+
+		fakeParser := &mockCardStringParser{}
+		fakeParser.On("ParseCardString", mock.AnythingOfType("string")).
 			Return(fakeCard, nil).
-			Times(10).
-			On("SortByValue", fakeHand).
+			Times(10)
+
+		fakeSorter := &mockSorterByValue{}
+		fakeSorter.On("SortByValue", fakeHand).
 			Return(fakeHand).
 			Twice()
 
-		first, second, err := ParseHands(parser, RandomString(1, 3))
+		fakeHandsParser := handsParser{
+			splitter:   fakeSplitter,
+			cardParser: fakeParser,
+			sorter:     fakeSorter,
+		}
+
+		first, second, err := fakeHandsParser.ParseHands(RandomString(1, 3))
 		assert.Nil(t, err)
 		assert.Equal(t, fakeHand, first)
 		assert.Equal(t, fakeHand, second)
-		parser.AssertExpectations(t)
+		fakeSplitter.AssertExpectations(t)
+		fakeParser.AssertExpectations(t)
+		fakeSorter.AssertExpectations(t)
 	}()
 
 	log.Println("should fail when the SplitHandsString fails")
 	func() {
 		msg := RandomString(10, 20)
-		parser := &mockCardStringParser{}
-		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+
+		fakeSplitter := &mockHandsStringSplitter{}
+		fakeSplitter.On("SplitHandsString", mock.AnythingOfType("string")).
 			Return([]string{}, errors.New(msg)).
 			Once()
 
-		_, _, err := ParseHands(parser, RandomString(1, 3))
+		_, _, err := (handsParser{splitter: fakeSplitter}).ParseHands(RandomString(1, 3))
 		assert.Errorf(t, err, msg)
-		parser.AssertExpectations(t)
+		fakeSplitter.AssertExpectations(t)
 	}()
 
 	log.Println("should fail when the cards string contains duplicated encoded cards")
 	func() {
 		fakeCardString := RandomString(1, 3)
-		parser := &mockCardStringParser{}
-		parser.On("SplitHandsString", mock.AnythingOfType("string")).
+		fakeHandsString := strings.Join([]string{fakeCardString, fakeCardString}, " ")
+
+		fakeSplitter := &mockHandsStringSplitter{}
+		fakeSplitter.On("SplitHandsString", fakeHandsString).
 			Return([]string{fakeCardString}, nil).
 			Once()
 
-		fakeCardsString := strings.Join([]string{fakeCardString, fakeCardString}, " ")
-		_, _, err := ParseHands(parser, fakeCardsString)
+		_, _, err := (handsParser{splitter: fakeSplitter}).ParseHands(fakeHandsString)
 		assert.Errorf(t, err, "failed to parse a line with hands: %s is not unique", fakeCardString)
-		parser.AssertExpectations(t)
+		fakeSplitter.AssertExpectations(t)
 	}()
 
 	log.Println("should fail when the ParseCardString fails")
 	func() {
 		msg := RandomString(10, 20)
-		parser := &mockCardStringParser{}
-		parser.On("SplitHandsString", mock.AnythingOfType("string")).
-			Return([]string{RandomString(1, 3)}, nil).
-			Once().
-			On("ParseCardString", mock.AnythingOfType("string")).
-			Return(Card{}, errors.New(msg))
 
-		_, _, err := ParseHands(parser, RandomString(1, 3))
+		fakeSplitter := &mockHandsStringSplitter{}
+		fakeSplitter.On("SplitHandsString", mock.AnythingOfType("string")).
+			Return([]string{RandomString(1, 3)}, nil).
+			Once()
+
+		fakeParser := &mockCardStringParser{}
+		fakeParser.On("ParseCardString", mock.AnythingOfType("string")).
+			Return(Card{}, errors.New(msg)).
+			Once()
+
+		fakeHandsParser := handsParser{
+			splitter:   fakeSplitter,
+			cardParser: fakeParser,
+		}
+
+		_, _, err := fakeHandsParser.ParseHands(RandomString(1, 3))
 		assert.Errorf(t, err, msg)
-		parser.AssertExpectations(t)
+		fakeSplitter.AssertExpectations(t)
+		fakeParser.AssertExpectations(t)
 	}()
 }

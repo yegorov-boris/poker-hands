@@ -6,205 +6,207 @@ import (
 	"testing"
 )
 
+var defaultMatcher = combMatcher{config: defaultConfig()}
+
 func TestIsOnePair(t *testing.T) {
 	log.Println("IsOnePair")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsOnePair)
+	checkNoCombinations(t, defaultMatcher.IsOnePair)
 
 	log.Println("should return true and a reordered hand when the hand contains a pair")
-	checkOnePair(t, IsOnePair, true)
+	checkOnePair(t, defaultMatcher.IsOnePair, true)
 }
 
 func TestIsTwoPairs(t *testing.T) {
 	log.Println("IsTwoPairs")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsTwoPairs)
+	checkNoCombinations(t, defaultMatcher.IsTwoPairs)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsTwoPairs, false)
+	checkOnePair(t, defaultMatcher.IsTwoPairs, false)
 
 	log.Println("should return true and a reordered hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsTwoPairs, true)
+	checkTwoPairs(t, defaultMatcher.IsTwoPairs, true)
 }
 
 func TestIsThreeKind(t *testing.T) {
 	log.Println("IsThreeKind")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsThreeKind)
+	checkNoCombinations(t, defaultMatcher.IsThreeKind)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsThreeKind, false)
+	checkOnePair(t, defaultMatcher.IsThreeKind, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsThreeKind, false)
+	checkTwoPairs(t, defaultMatcher.IsThreeKind, false)
 
 	log.Println("should return true and a reordered hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsThreeKind, true)
+	checkThree(t, defaultMatcher.IsThreeKind, true)
 }
 
 func TestIsStraight(t *testing.T) {
 	log.Println("IsStraight")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsStraight)
+	checkNoCombinations(t, defaultMatcher.IsStraight)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsStraight, false)
+	checkOnePair(t, defaultMatcher.IsStraight, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsStraight, false)
+	checkTwoPairs(t, defaultMatcher.IsStraight, false)
 
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsStraight, false)
+	checkThree(t, defaultMatcher.IsStraight, false)
 
 	log.Println("should return true and a hand when the hand is straight")
-	checkStraight(t, IsStraight, true)
+	checkStraight(t, defaultMatcher.IsStraight, true)
 }
 
 func TestIsFlush(t *testing.T) {
 	log.Println("IsFlush")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsFlush)
+	checkNoCombinations(t, defaultMatcher.IsFlush)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsFlush, false)
+	checkOnePair(t, defaultMatcher.IsFlush, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsFlush, false)
+	checkTwoPairs(t, defaultMatcher.IsFlush, false)
 
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsFlush, false)
+	checkThree(t, defaultMatcher.IsFlush, false)
 
 	log.Println("should return false and a hand when the hand is straight")
-	checkStraight(t, IsFlush, false)
+	checkStraight(t, defaultMatcher.IsFlush, false)
 
 	log.Println("should return true and a hand when the hand is flush")
-	checkFlush(t, IsFlush, true)
+	checkFlush(t, defaultMatcher.IsFlush, true)
 }
 
 func TestIsFullHouse(t *testing.T) {
 	log.Println("IsFullHouse")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsFullHouse)
+	checkNoCombinations(t, defaultMatcher.IsFullHouse)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsFullHouse, false)
+	checkOnePair(t, defaultMatcher.IsFullHouse, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsFullHouse, false)
+	checkTwoPairs(t, defaultMatcher.IsFullHouse, false)
 
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsFullHouse, false)
+	checkThree(t, defaultMatcher.IsFullHouse, false)
 
 	log.Println("should return false and a hand when the hand is straight")
-	checkStraight(t, IsFullHouse, false)
+	checkStraight(t, defaultMatcher.IsFullHouse, false)
 
 	log.Println("should return false and a hand when the hand is flush")
-	checkFlush(t, IsFullHouse, false)
+	checkFlush(t, defaultMatcher.IsFullHouse, false)
 
 	log.Println("should return true and a reordered hand when the hand is full house")
-	checkFullHouse(t, IsFullHouse, true)
+	checkFullHouse(t, defaultMatcher.IsFullHouse, true)
 }
 
 func TestIsFourKind(t *testing.T) {
 	log.Println("IsFourKind")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsFourKind)
+	checkNoCombinations(t, defaultMatcher.IsFourKind)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsFourKind, false)
+	checkOnePair(t, defaultMatcher.IsFourKind, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsFourKind, false)
+	checkTwoPairs(t, defaultMatcher.IsFourKind, false)
 
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsFourKind, false)
+	checkThree(t, defaultMatcher.IsFourKind, false)
 
 	log.Println("should return false and a hand when the hand is straight")
-	checkStraight(t, IsFourKind, false)
+	checkStraight(t, defaultMatcher.IsFourKind, false)
 
 	log.Println("should return false and a hand when the hand is flush")
-	checkFlush(t, IsFourKind, false)
+	checkFlush(t, defaultMatcher.IsFourKind, false)
 
 	log.Println("should return false and a hand when the hand is full house")
-	checkFullHouse(t, IsFourKind, false)
+	checkFullHouse(t, defaultMatcher.IsFourKind, false)
 
 	log.Println("should return true and a reordered hand when the hand has four cards of the same value")
-	checkFour(t, IsFourKind, true)
+	checkFour(t, defaultMatcher.IsFourKind, true)
 }
 
 func TestIsStraightFlush(t *testing.T) {
 	log.Println("IsStraightFlush")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsStraightFlush)
+	checkNoCombinations(t, defaultMatcher.IsStraightFlush)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsStraightFlush, false)
+	checkOnePair(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsStraightFlush, false)
+	checkTwoPairs(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsStraightFlush, false)
+	checkThree(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return false and a hand when the hand is straight")
-	checkStraight(t, IsStraightFlush, false)
+	checkStraight(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return false and a hand when the hand is flush")
-	checkFlush(t, IsStraightFlush, false)
+	checkFlush(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return false and a hand when the hand is full house")
-	checkFullHouse(t, IsStraightFlush, false)
+	checkFullHouse(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return false and a hand when the hand has four cards of the same value")
-	checkFour(t, IsStraightFlush, false)
+	checkFour(t, defaultMatcher.IsStraightFlush, false)
 
 	log.Println("should return true and a hand when the hand is a straight flush")
-	checkStraightFlush(t, IsStraightFlush, true)
+	checkStraightFlush(t, defaultMatcher.IsStraightFlush, true)
 }
 
 func TestIsRoyalFlush(t *testing.T) {
 	log.Println("IsRoyalFlush")
 
 	log.Println("should return false and a hand when the hand doesn't contain a pair")
-	checkNoCombinations(t, IsRoyalFlush)
+	checkNoCombinations(t, defaultMatcher.IsRoyalFlush)
 
 	log.Println("should return false and a hand when the hand contains exactly 1 pair")
-	checkOnePair(t, IsRoyalFlush, false)
+	checkOnePair(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand contains 2 pairs")
-	checkTwoPairs(t, IsRoyalFlush, false)
+	checkTwoPairs(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand contains 3 cards of the same value")
-	checkThree(t, IsRoyalFlush, false)
+	checkThree(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand is straight")
-	checkStraight(t, IsRoyalFlush, false)
+	checkStraight(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand is flush")
-	checkFlush(t, IsRoyalFlush, false)
+	checkFlush(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand is full house")
-	checkFullHouse(t, IsRoyalFlush, false)
+	checkFullHouse(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand has four cards of the same value")
-	checkFour(t, IsRoyalFlush, false)
+	checkFour(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return false and a hand when the hand is a straight flush")
-	checkStraightFlush(t, IsRoyalFlush, false)
+	checkStraightFlush(t, defaultMatcher.IsRoyalFlush, false)
 
 	log.Println("should return true and a hand when the hand is a royal flush")
 	func() {
 		handRoyalFlush := HandRoyalFlush()
 
-		isRoyalFlush, actualHand := IsRoyalFlush(handRoyalFlush)
+		isRoyalFlush, actualHand := defaultMatcher.IsRoyalFlush(handRoyalFlush)
 		assert.Equal(t, true, isRoyalFlush)
 		assert.Equal(t, handRoyalFlush, actualHand)
 	}()

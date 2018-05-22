@@ -4,13 +4,29 @@ import (
 	"strings"
 )
 
-func IsRoyalFlush(hand Hand) (bool, Hand) {
+type combinationMatcher interface {
+	IsOnePair(hand Hand) (bool, Hand)
+	IsTwoPairs(hand Hand) (bool, Hand)
+	IsThreeKind(hand Hand) (bool, Hand)
+	IsStraight(hand Hand) (bool, Hand)
+	IsFlush(hand Hand) (bool, Hand)
+	IsFullHouse(hand Hand) (bool, Hand)
+	IsFourKind(hand Hand) (bool, Hand)
+	IsStraightFlush(hand Hand) (bool, Hand)
+	IsRoyalFlush(hand Hand) (bool, Hand)
+}
 
-	if result, _ := IsFlush(hand); !result {
+type combMatcher struct {
+	config config
+}
+
+func (m combMatcher) IsRoyalFlush(hand Hand) (bool, Hand) {
+
+	if result, _ := m.IsFlush(hand); !result {
 		return false, hand
 	}
 
-	for i, value := range strings.Split(CardValues, Separator)[:5] {
+	for i, value := range strings.Split(m.config.cardValues, m.config.separator)[:5] {
 		if hand[i].Value != value {
 			return false, hand
 		}
@@ -19,14 +35,14 @@ func IsRoyalFlush(hand Hand) (bool, Hand) {
 	return true, hand
 }
 
-func IsStraightFlush(hand Hand) (bool, Hand) {
-	flush, _ := IsFlush(hand)
-	straight, _ := IsStraight(hand)
+func (m combMatcher) IsStraightFlush(hand Hand) (bool, Hand) {
+	flush, _ := m.IsFlush(hand)
+	straight, _ := m.IsStraight(hand)
 
 	return flush && straight, hand
 }
 
-func IsFourKind(hand Hand) (bool, Hand) {
+func (m combMatcher) IsFourKind(hand Hand) (bool, Hand) {
 	if hand[0].Value == hand[3].Value {
 		return true, hand
 	}
@@ -43,7 +59,7 @@ func IsFourKind(hand Hand) (bool, Hand) {
 	return false, hand
 }
 
-func IsFullHouse(hand Hand) (bool, Hand) {
+func (m combMatcher) IsFullHouse(hand Hand) (bool, Hand) {
 	if (hand[0].Value == hand[2].Value) && (hand[3].Value == hand[4].Value) {
 		return true, hand
 	}
@@ -54,7 +70,7 @@ func IsFullHouse(hand Hand) (bool, Hand) {
 	return false, hand
 }
 
-func IsFlush(hand Hand) (bool, Hand) {
+func (m combMatcher) IsFlush(hand Hand) (bool, Hand) {
 	for _, card := range hand {
 		if card.Suit != hand[0].Suit {
 			return false, hand
@@ -64,17 +80,17 @@ func IsFlush(hand Hand) (bool, Hand) {
 	return true, hand
 }
 
-func IsStraight(hand Hand) (bool, Hand) {
+func (m combMatcher) IsStraight(hand Hand) (bool, Hand) {
 	var values []string
 
 	for _, card := range hand {
 		values = append(values, card.Value)
 	}
 
-	return strings.Contains(CardValues, strings.Join(values, Separator)), hand
+	return strings.Contains(m.config.cardValues, strings.Join(values, m.config.separator)), hand
 }
 
-func IsThreeKind(hand Hand) (bool, Hand) {
+func (m combMatcher) IsThreeKind(hand Hand) (bool, Hand) {
 	if hand[0].Value == hand[2].Value {
 		return true, hand
 	}
@@ -88,7 +104,7 @@ func IsThreeKind(hand Hand) (bool, Hand) {
 	return false, hand
 }
 
-func IsTwoPairs(hand Hand) (bool, Hand) {
+func (m combMatcher) IsTwoPairs(hand Hand) (bool, Hand) {
 	if (hand[0].Value == hand[1].Value) && (hand[2].Value == hand[3].Value) {
 		return true, hand
 	}
@@ -102,7 +118,7 @@ func IsTwoPairs(hand Hand) (bool, Hand) {
 	return false, hand
 }
 
-func IsOnePair(hand Hand) (bool, Hand) {
+func (m combMatcher) IsOnePair(hand Hand) (bool, Hand) {
 	index := 0
 	for ; index < 4; index++ {
 		if hand[index].Value == hand[index+1].Value {

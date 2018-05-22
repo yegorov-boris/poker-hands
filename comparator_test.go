@@ -1,126 +1,221 @@
 package main
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"log"
 	"math/rand"
 	"strings"
 	"testing"
 )
 
-var randomHandGenerators = []func() Hand{
-	HandRoyalFlush,
-	HandStraightFlush,
-	HandFour,
-	HandFullHouse,
-	HandFlush,
-	HandStraight,
-	HandWithThree,
-	HandWithTwoPairs,
-	HandWithPair,
-	HandNoPairs,
+var checkerNames = []string{
+	"IsRoyalFlush",
+	"IsStraightFlush",
+	"IsFourKind",
+	"IsFullHouse",
+	"IsFlush",
+	"IsStraight",
+	"IsThreeKind",
+	"IsTwoPairs",
+	"IsOnePair",
 }
 
 func TestGetCombination(t *testing.T) {
 	log.Println("GetCombination")
 
 	log.Println("should return the combination index and the reordered hand")
+	func() {
+		expectedIndex := rand.Intn(len(checkerNames))
+		fakeMatcher := &mockCombinationMatcher{}
+		for i, checkerName := range checkerNames {
+			fakeMatcher.On(checkerName, Hand{}).Return(i == expectedIndex, Hand{}).Maybe()
+		}
 
-	expectedIndex := rand.Intn(len(randomHandGenerators))
-	hand := randomHandGenerators[expectedIndex]()
-	expectedHand := reorderHand(expectedIndex, hand)
+		actualIndex, actualHand := (comparator{matcher: fakeMatcher}).GetCombination(Hand{})
+		assert.Equal(t, expectedIndex, actualIndex)
+		assert.Equal(t, Hand{}, actualHand)
+		fakeMatcher.AssertExpectations(t)
+	}()
 
-	actualIndex, actualHand := GetCombination(hand)
-	assert.Equal(t, expectedIndex, actualIndex)
-	assert.Equal(t, expectedHand, actualHand)
+	log.Println("should return 9 and the hand when there's no combination")
+	func() {
+		fakeMatcher := &mockCombinationMatcher{}
+		for _, checkerName := range checkerNames {
+			fakeMatcher.On(checkerName, Hand{}).Return(false, Hand{}).Once()
+		}
+
+		actualIndex, actualHand := (comparator{matcher: fakeMatcher}).GetCombination(Hand{})
+		assert.Equal(t, 9, actualIndex)
+		assert.Equal(t, Hand{}, actualHand)
+		fakeMatcher.AssertExpectations(t)
+	}()
 }
 
 func TestIsFirstPlayerWinner(t *testing.T) {
 	log.Println("IsFirstPlayerWinner")
 
-	log.Println("should fail when the parsing fails")
+	log.Println("should fail when the ParseHands fails")
 	func() {
-		_, err := IsFirstPlayerWinner(RandomString(30, 50))
-		assert.Error(t, err)
+		msg := RandomString(10, 20)
+		fakeParser := &mockHandsStringParser{}
+		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+			Return(Hand{}, Hand{}, errors.New(msg)).
+			Once()
+
+		_, err := (comparator{parser: fakeParser}).IsFirstPlayerWinner(RandomString(30, 50))
+		assert.Errorf(t, err, msg)
+		fakeParser.AssertExpectations(t)
 	}()
 
 	log.Println("should return true when the first player's combination is stronger")
 	func() {
-		firstCombinationIndex := rand.Intn(len(randomHandGenerators) - 1)
-		secondCombinationIndex := firstCombinationIndex + 1 +
-			rand.Intn(len(randomHandGenerators)-firstCombinationIndex-1)
+		firstHand := Hand{Card{Value: "first"}}
+		secondHand := Hand{Card{Value: "second"}}
+		fakeParser := &mockHandsStringParser{}
+		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+			Return(firstHand, secondHand, nil).
+			Once()
 
-		actual, err := IsFirstPlayerWinner(validHandsString(firstCombinationIndex, secondCombinationIndex))
+		secondCombinationIndex := 1 + rand.Intn(len(checkerNames))
+		firstCombinationIndex := rand.Intn(secondCombinationIndex)
+		fakeMatcher := &mockCombinationMatcher{}
+		for i, checkerName := range checkerNames {
+			fakeMatcher.
+				On(checkerName, firstHand).
+				Return(i == firstCombinationIndex, Hand{}).
+				Maybe().
+				On(checkerName, secondHand).
+				Return(i == secondCombinationIndex, Hand{}).
+				Maybe()
+		}
+
+		fakeComparator := comparator{
+			parser:  fakeParser,
+			matcher: fakeMatcher,
+		}
+
+		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
 		assert.Nil(t, err)
 		assert.True(t, actual)
+		fakeParser.AssertExpectations(t)
+		fakeMatcher.AssertExpectations(t)
 	}()
 
 	log.Println("should return false when the second player's combination is stronger")
 	func() {
-		firstCombinationIndex := 1 + rand.Intn(len(randomHandGenerators)-1)
-		secondCombinationIndex := rand.Intn(firstCombinationIndex)
+		firstHand := Hand{Card{Value: "first"}}
+		secondHand := Hand{Card{Value: "second"}}
+		fakeParser := &mockHandsStringParser{}
+		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+			Return(firstHand, secondHand, nil).
+			Once()
 
-		actual, err := IsFirstPlayerWinner(validHandsString(firstCombinationIndex, secondCombinationIndex))
+		firstCombinationIndex := 1 + rand.Intn(len(checkerNames))
+		secondCombinationIndex := rand.Intn(firstCombinationIndex)
+		fakeMatcher := &mockCombinationMatcher{}
+		for i, checkerName := range checkerNames {
+			fakeMatcher.
+				On(checkerName, firstHand).
+				Return(i == firstCombinationIndex, Hand{}).
+				Maybe().
+				On(checkerName, secondHand).
+				Return(i == secondCombinationIndex, Hand{}).
+				Maybe()
+		}
+
+		fakeComparator := comparator{
+			parser:  fakeParser,
+			matcher: fakeMatcher,
+		}
+
+		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
 		assert.Nil(t, err)
 		assert.False(t, actual)
+		fakeParser.AssertExpectations(t)
+		fakeMatcher.AssertExpectations(t)
 	}()
 
 	log.Println("should return true when the combinations have equal ranks ",
 		"but the first player's cards are stronger")
 	func() {
-		actual, err := IsFirstPlayerWinner("5D 8C 9S JS AC 2C 5C 7D 8S QH")
+		firstValue := RandomStringWithout(1, 1, " ")
+		secondValue := RandomStringWithout(1, 1, strings.Join([]string{" ", firstValue}, ""))
+		position := rand.Intn(5)
+		firstHand := Hand{}
+		firstHand[position].Value = firstValue
+		secondHand := Hand{}
+		secondHand[position].Value = secondValue
+		fakeParser := &mockHandsStringParser{}
+		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+			Return(firstHand, secondHand, nil).
+			Once()
+
+		index := rand.Intn(len(checkerNames) + 1)
+		fakeMatcher := &mockCombinationMatcher{}
+		for i, checkerName := range checkerNames {
+			fakeMatcher.
+				On(checkerName, firstHand).
+				Return(i == index, firstHand).
+				Maybe().
+				On(checkerName, secondHand).
+				Return(i == index, secondHand).
+				Maybe()
+		}
+
+		fakeCardValues := strings.Join([]string{firstValue, secondValue}, " ")
+		fakeComparator := comparator{
+			config:  config{cardValues: fakeCardValues},
+			parser:  fakeParser,
+			matcher: fakeMatcher,
+		}
+
+		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
 		assert.Nil(t, err)
 		assert.True(t, actual)
+		fakeParser.AssertExpectations(t)
+		fakeMatcher.AssertExpectations(t)
 	}()
 
 	log.Println("should return false when the combinations have equal ranks ",
 		"but the first player's cards are not stronger")
 	func() {
-		actual, err := IsFirstPlayerWinner("5H 5C 6S 7S KD 2C 3S 8S 8D TD")
+		firstValue := RandomStringWithout(1, 1, " ")
+		secondValue := RandomStringWithout(1, 1, strings.Join([]string{" ", firstValue}, ""))
+		position := rand.Intn(5)
+		firstHand := Hand{}
+		firstHand[position].Value = firstValue
+		secondHand := Hand{}
+		secondHand[position].Value = secondValue
+		fakeParser := &mockHandsStringParser{}
+		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+			Return(firstHand, secondHand, nil).
+			Once()
+
+		index := rand.Intn(len(checkerNames) + 1)
+		fakeMatcher := &mockCombinationMatcher{}
+		for i, checkerName := range checkerNames {
+			fakeMatcher.
+				On(checkerName, firstHand).
+				Return(i == index, firstHand).
+				Maybe().
+				On(checkerName, secondHand).
+				Return(i == index, secondHand).
+				Maybe()
+		}
+
+		fakeCardValues := strings.Join([]string{secondValue, firstValue}, " ")
+		fakeComparator := comparator{
+			config:  config{cardValues: fakeCardValues},
+			parser:  fakeParser,
+			matcher: fakeMatcher,
+		}
+
+		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
 		assert.Nil(t, err)
 		assert.False(t, actual)
+		fakeParser.AssertExpectations(t)
+		fakeMatcher.AssertExpectations(t)
 	}()
-}
-
-func validHandsString(firstCombinationIndex, secondCombinationIndex int) string {
-	firstHand := randomHandGenerators[firstCombinationIndex]()
-	secondHand := randomHandGenerators[secondCombinationIndex]()
-
-	for _, firstCard := range firstHand {
-		for _, secondCard := range secondHand {
-			if firstCard == secondCard {
-				return validHandsString(firstCombinationIndex, secondCombinationIndex)
-			}
-		}
-	}
-
-	var values []string
-	for _, card := range firstHand {
-		values = append(values, strings.Join([]string{card.Value, card.Suit}, ""))
-	}
-	for _, card := range secondHand {
-		values = append(values, strings.Join([]string{card.Value, card.Suit}, ""))
-	}
-
-	return strings.Join(values, Separator)
-}
-
-func reorderHand(combinationIndex int, hand Hand) Hand {
-	if combinationIndex == 8 {
-		return ReorderOnePair(hand)
-	}
-	if combinationIndex == 7 {
-		return ReorderTwoPairs(hand)
-	}
-	if combinationIndex == 6 {
-		return ReorderThree(hand)
-	}
-	if combinationIndex == 3 {
-		return ReorderFullHouse(hand)
-	}
-	if combinationIndex == 2 {
-		return ReorderFour(hand)
-	}
-
-	return hand
 }

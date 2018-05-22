@@ -40,6 +40,15 @@ func main() {
 func CreateCheckers(chunkSize int) ([]chan string, []chan EitherBool) {
 	var inputs []chan string
 	var outputs []chan EitherBool
+	defaultComparator := comparator{
+		config: defaultConfig(),
+		parser: handsParser{
+			splitter:   splitter{config: defaultConfig()},
+			cardParser: cardParser{config: defaultConfig()},
+			sorter:     sorter{config: defaultConfig()},
+		},
+		matcher: combMatcher{config: defaultConfig()},
+	}
 	for i := 0; i < chunkSize; i++ {
 		input := make(chan string)
 		output := make(chan EitherBool)
@@ -47,7 +56,7 @@ func CreateCheckers(chunkSize int) ([]chan string, []chan EitherBool) {
 		outputs = append(outputs, output)
 		go func() {
 			for {
-				result, err := IsFirstPlayerWinner(<-input)
+				result, err := defaultComparator.IsFirstPlayerWinner(<-input)
 				if err == nil {
 					output <- EitherBool{Left: result}
 				} else {

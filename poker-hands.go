@@ -9,11 +9,11 @@ import (
 
 type Card struct{ Suit, Value string }
 type Hand [5]Card
-type EitherBool struct {
-	Left  bool
+type Either struct {
+	Left  chan string
 	Right error
 }
-type Scanner interface {
+type scanner interface {
 	Scan() bool
 	Text() string
 }
@@ -29,7 +29,7 @@ func main() {
 
 	defer resp.Body.Close()
 
-	firstPlayerWinsCount, errCount := CountWins(bufio.NewScanner(resp.Body), MaxChunkSize)
+	firstPlayerWinsCount, errCount := countWins(bufio.NewScanner(resp.Body), defaultComparator(), poolSzie)
 	if errCount != nil {
 		log.Fatal(errCount)
 	}
@@ -37,74 +37,56 @@ func main() {
 	fmt.Printf("The first player won %d times\n", firstPlayerWinsCount)
 }
 
-func CreateCheckers(chunkSize int) ([]chan string, []chan EitherBool) {
-	var inputs []chan string
-	var outputs []chan EitherBool
-	defaultComparator := comparator{
-		config: defaultConfig(),
-		parser: handsParser{
-			splitter:   splitter{config: defaultConfig()},
-			cardParser: cardParser{config: defaultConfig()},
-			sorter:     sorter{config: defaultConfig()},
-		},
-		matcher: combMatcher{config: defaultConfig()},
-	}
-	for i := 0; i < chunkSize; i++ {
-		input := make(chan string)
-		output := make(chan EitherBool)
-		inputs = append(inputs, input)
-		outputs = append(outputs, output)
-		go func() {
-			for {
-				result, err := defaultComparator.IsFirstPlayerWinner(<-input)
-				if err == nil {
-					output <- EitherBool{Left: result}
-				} else {
-					output <- EitherBool{Right: err}
-				}
+func counter(comparator comparator, requestsToRead chan Either, counts chan int) {
+	count := 0
+	reader := make(chan string)
+	requestsToRead <- Either{Left: reader, Right: nil}
+
+	for handsString := range reader {
+		if handsString == stop {
+			close(reader)
+			counts <- count
+			return
+		} else {
+			result, err := comparator.IsFirstPlayerWinner(handsString)
+			if result {
+				count++
 			}
-		}()
-	}
 
-	return inputs, outputs
-}
-
-func ScanChunk(scanner Scanner, size int) (bool, []string) {
-	var chunk []string
-	for i := 0; i < size; i++ {
-		if !scanner.Scan() {
-			return true, chunk
+			requestsToRead <- Either{Left: reader, Right: err}
 		}
-
-		chunk = append(chunk, scanner.Text())
 	}
-
-	return false, chunk
 }
 
-func CountWins(scanner Scanner, chunkSize int) (int, error) {
+func countWins(scanner scanner, comparator comparator, poolSize int) (int, error) {
 	firstPlayerWinsCount := 0
-	inputs, outputs := CreateCheckers(chunkSize)
+	requestsToRead := make(chan Either, poolSize)
+	counts := make(chan int, poolSize)
 
-	for {
-		eof, chunk := ScanChunk(scanner, chunkSize)
+	for i := 0; i < poolSize; i++ {
+		go counter(comparator, requestsToRead, counts)
+	}
 
-		for i, cardString := range chunk {
-			inputs[i] <- cardString
+	activeCounters := poolSize
+	for requestToRead := range requestsToRead {
+		if requestToRead.Right != nil {
+			return firstPlayerWinsCount, requestToRead.Right
 		}
 
-		for i := range chunk {
-			result := <-outputs[i]
-			if result.Right != nil {
-				return 0, result.Right
+		if scanner.Scan() {
+			requestToRead.Left <- scanner.Text()
+		} else {
+			requestToRead.Left <- stop
+			activeCounters--
+			if activeCounters == 0 {
+				close(requestsToRead)
 			}
-			if result.Left {
-				firstPlayerWinsCount++
-			}
-		}
-
-		if eof {
-			return firstPlayerWinsCount, nil
 		}
 	}
+
+	for i := 0; i < poolSize; i++ {
+		firstPlayerWinsCount = firstPlayerWinsCount + (<-counts)
+	}
+
+	return firstPlayerWinsCount, nil
 }

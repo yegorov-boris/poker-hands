@@ -33,7 +33,7 @@ func TestGetCombination(t *testing.T) {
 			fakeMatcher.On(checkerName, Hand{}).Return(i == expectedIndex, Hand{}).Maybe()
 		}
 
-		actualIndex, actualHand := (comparator{matcher: fakeMatcher}).GetCombination(Hand{})
+		actualIndex, actualHand := (cmp{matcher: fakeMatcher}).GetCombination(Hand{})
 		assert.Equal(t, expectedIndex, actualIndex)
 		assert.Equal(t, Hand{}, actualHand)
 		fakeMatcher.AssertExpectations(t)
@@ -46,7 +46,7 @@ func TestGetCombination(t *testing.T) {
 			fakeMatcher.On(checkerName, Hand{}).Return(false, Hand{}).Once()
 		}
 
-		actualIndex, actualHand := (comparator{matcher: fakeMatcher}).GetCombination(Hand{})
+		actualIndex, actualHand := (cmp{matcher: fakeMatcher}).GetCombination(Hand{})
 		assert.Equal(t, 9, actualIndex)
 		assert.Equal(t, Hand{}, actualHand)
 		fakeMatcher.AssertExpectations(t)
@@ -64,7 +64,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 			Return(Hand{}, Hand{}, errors.New(msg)).
 			Once()
 
-		_, err := (comparator{parser: fakeParser}).IsFirstPlayerWinner(RandomString(30, 50))
+		_, err := (cmp{parser: fakeParser}).IsFirstPlayerWinner(RandomString(30, 50))
 		assert.Errorf(t, err, msg)
 		fakeParser.AssertExpectations(t)
 	}()
@@ -91,7 +91,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 				Maybe()
 		}
 
-		fakeComparator := comparator{
+		fakeComparator := cmp{
 			parser:  fakeParser,
 			matcher: fakeMatcher,
 		}
@@ -125,7 +125,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 				Maybe()
 		}
 
-		fakeComparator := comparator{
+		fakeComparator := cmp{
 			parser:  fakeParser,
 			matcher: fakeMatcher,
 		}
@@ -165,7 +165,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 		}
 
 		fakeCardValues := strings.Join([]string{firstValue, secondValue}, " ")
-		fakeComparator := comparator{
+		fakeComparator := cmp{
 			config:  config{cardValues: fakeCardValues},
 			parser:  fakeParser,
 			matcher: fakeMatcher,
@@ -206,7 +206,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 		}
 
 		fakeCardValues := strings.Join([]string{secondValue, firstValue}, " ")
-		fakeComparator := comparator{
+		fakeComparator := cmp{
 			config:  config{cardValues: fakeCardValues},
 			parser:  fakeParser,
 			matcher: fakeMatcher,

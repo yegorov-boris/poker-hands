@@ -4,13 +4,17 @@ import (
 	"strings"
 )
 
-type comparator struct {
+type comparator interface {
+	IsFirstPlayerWinner(hands string) (bool, error)
+}
+
+type cmp struct {
 	config  config
 	parser  handsStringParser
 	matcher combinationMatcher
 }
 
-func (c comparator) IsFirstPlayerWinner(hands string) (bool, error) {
+func (c cmp) IsFirstPlayerWinner(hands string) (bool, error) {
 	first, second, err := c.parser.ParseHands(hands)
 	if err != nil {
 		return false, err
@@ -35,7 +39,7 @@ func (c comparator) IsFirstPlayerWinner(hands string) (bool, error) {
 	return false, nil
 }
 
-func (c comparator) GetCombination(hand Hand) (int, Hand) {
+func (c cmp) GetCombination(hand Hand) (int, Hand) {
 	combinationCheckers := []func(Hand) (bool, Hand){
 		func(hand Hand) (bool, Hand) {
 			return c.matcher.IsRoyalFlush(hand)

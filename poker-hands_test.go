@@ -1,86 +1,130 @@
 package main
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"log"
-	"math/rand"
 	"testing"
 )
 
-type ScannerSpy struct {
-	C          int
-	ShouldFail bool
+type scannerMock struct {
+	c                int
+	fakeHandsStrings []string
 }
 
-func (s *ScannerSpy) Scan() bool {
-	s.C++
-	return s.C < 4
+func (s *scannerMock) Scan() bool {
+	s.c++
+	return s.c < 4
 }
 
-func (s *ScannerSpy) Text() string {
-	dummy := []string{
-		"4D 6S 9H QH QC 3D 6D 7H QD QS",
-		"2D 9C AS AH AC 3D 6D 7D TD QD",
-		"2H 2D 4C 4D 4S 3C 3D 3S 9S 9D",
-	}
-	if s.ShouldFail {
-		return RandomString(20, 50)
-	}
-	return dummy[s.C-1]
+func (s *scannerMock) Text() string {
+	return s.fakeHandsStrings[s.c-1]
 }
 
-func TestCreateCheckers(t *testing.T) {
-	log.Println("CreateCheckers")
+func TestCounter(t *testing.T) {
+	log.Println("counter")
 
-	log.Println("should create goroutines that take a string and return an error when something fails")
+	log.Println("should send an error when it fails to process a hands string")
 	func() {
-		inputs, outputs := CreateCheckers(MaxChunkSize)
-		i := rand.Intn(MaxChunkSize)
+		requestsToRead := make(chan Either, 2)
+		counts := make(chan int, 2)
+		msg := RandomString(10, 20)
+		fakeCmp := &mockComparator{}
+		fakeCmp.
+			On("IsFirstPlayerWinner", mock.AnythingOfType("string")).
+			Return(false, errors.New(msg)).
+			Once()
+		go counter(fakeCmp, requestsToRead, counts)
 
-		inputs[i] <- RandomString(20, 50)
-		result := <-outputs[i]
-		assert.Error(t, result.Right)
+		initialRequestToRead := <-requestsToRead
+		initialRequestToRead.Left <- RandomString(10, 20)
+		finalRequestToRead := <-requestsToRead
+		finalRequestToRead.Left <- stop
+
+		assert.Nil(t, initialRequestToRead.Right)
+		assert.Errorf(t, finalRequestToRead.Right, msg)
+		fakeCmp.AssertExpectations(t)
 	}()
 
-	log.Println("should create goroutines that take a string and return true when the first player wins")
+	log.Println("should send the number of the processed hands strings")
 	func() {
-		inputs, outputs := CreateCheckers(MaxChunkSize)
-		i := rand.Intn(MaxChunkSize)
+		requestsToRead := make(chan Either, 2)
+		counts := make(chan int, 2)
+		handsWin := RandomString(10, 20)
+		handsLoss := RandomString(10, 20)
+		fakeCmp := &mockComparator{}
+		fakeCmp.
+			On("IsFirstPlayerWinner", handsWin).
+			Return(true, nil).
+			Once().
+			On("IsFirstPlayerWinner", handsLoss).
+			Return(false, nil).
+			Once()
+		go counter(fakeCmp, requestsToRead, counts)
 
-		inputs[i] <- "5D 8C 9S JS AC 2C 5C 7D 8S QH"
-		result := <-outputs[i]
-		assert.Nil(t, result.Right)
-		assert.True(t, result.Left)
-	}()
-
-	log.Println("should create goroutines that take a string and return false when the second player wins")
-	func() {
-		inputs, outputs := CreateCheckers(MaxChunkSize)
-		i := rand.Intn(MaxChunkSize)
-
-		inputs[i] <- "5H 5C 6S 7S KD 2C 3S 8S 8D TD"
-		result := <-outputs[i]
-		assert.Nil(t, result.Right)
-		assert.False(t, result.Left)
+		initialRequestToRead := <-requestsToRead
+		initialRequestToRead.Left <- handsLoss
+		nextRequestToRead := <-requestsToRead
+		nextRequestToRead.Left <- handsWin
+		finalRequestToRead := <-requestsToRead
+		finalRequestToRead.Left <- stop
+		count := <-counts
+		assert.Nil(t, initialRequestToRead.Right)
+		assert.Nil(t, nextRequestToRead.Right)
+		assert.Nil(t, finalRequestToRead.Right)
+		assert.Equal(t, 1, count)
+		fakeCmp.AssertExpectations(t)
 	}()
 }
 
 func TestCountWins(t *testing.T) {
 	log.Println("CountWins")
 
-	log.Println("should fail when a checker fails")
+	log.Println("should fail when it fails to process a hands string")
 	func() {
-		scannerSpy := ScannerSpy{0, true}
-		result, err := CountWins(&scannerSpy, 2)
+		fakeHandsString := RandomString(10, 15)
+		fakeScanner := &mockScanner{}
+		fakeScanner.On("Scan").Return(true).Twice()
+		fakeScanner.On("Text").Return(fakeHandsString).Twice()
+
+		msg := RandomString(10, 20)
+		fakeCmp := &mockComparator{}
+		fakeCmp.
+			On("IsFirstPlayerWinner", fakeHandsString).
+			Return(false, errors.New(msg)).
+			Maybe()
+
+		result, err := countWins(fakeScanner, fakeCmp, 2)
 		assert.Equal(t, 0, result)
-		assert.Error(t, err)
+		assert.Errorf(t, err, msg)
+		fakeScanner.AssertExpectations(t)
+		fakeCmp.AssertExpectations(t)
 	}()
 
 	log.Println("should count the first player's wins")
 	func() {
-		scannerSpy := ScannerSpy{0, false}
-		result, err := CountWins(&scannerSpy, 2)
-		assert.Nil(t, err)
+		fakeHandsStrings := []string{
+			RandomString(10, 15),
+			RandomString(10, 15),
+			RandomString(10, 15),
+		}
+
+		fakeCmp := &mockComparator{}
+		fakeCmp.
+			On("IsFirstPlayerWinner", fakeHandsStrings[0]).
+			Return(true, nil).
+			Once().
+			On("IsFirstPlayerWinner", fakeHandsStrings[1]).
+			Return(false, nil).
+			Once().
+			On("IsFirstPlayerWinner", fakeHandsStrings[2]).
+			Return(true, nil).
+			Once()
+
+		result, err := countWins(&scannerMock{fakeHandsStrings: fakeHandsStrings}, fakeCmp, 2)
 		assert.Equal(t, 2, result)
+		assert.Nil(t, err)
+		fakeCmp.AssertExpectations(t)
 	}()
 }

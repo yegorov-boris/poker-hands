@@ -8,8 +8,8 @@ type mockHandsStringSplitter struct {
 	mock.Mock
 }
 
-// SplitHandsString provides a mock function with given fields: _a0
-func (_m *mockHandsStringSplitter) SplitHandsString(_a0 string) ([]string, error) {
+// splitHandsString provides a mock function with given fields: _a0
+func (_m *mockHandsStringSplitter) splitHandsString(_a0 string) ([]string, error) {
 	ret := _m.Called(_a0)
 
 	var r0 []string

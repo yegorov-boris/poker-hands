@@ -8,8 +8,8 @@ type mockComparator struct {
 	mock.Mock
 }
 
-// IsFirstPlayerWinner provides a mock function with given fields: hands
-func (_m *mockComparator) IsFirstPlayerWinner(hands string) (bool, error) {
+// isFirstPlayerWinner provides a mock function with given fields: hands
+func (_m *mockComparator) isFirstPlayerWinner(hands string) (bool, error) {
 	ret := _m.Called(hands)
 
 	var r0 bool

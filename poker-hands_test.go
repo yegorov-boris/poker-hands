@@ -29,16 +29,16 @@ func TestCounter(t *testing.T) {
 	func() {
 		requestsToRead := make(chan Either, 2)
 		counts := make(chan int, 2)
-		msg := RandomString(10, 20)
+		msg := randomString(10, 20)
 		fakeCmp := &mockComparator{}
 		fakeCmp.
-			On("IsFirstPlayerWinner", mock.AnythingOfType("string")).
+			On("isFirstPlayerWinner", mock.AnythingOfType("string")).
 			Return(false, errors.New(msg)).
 			Once()
 		go counter(fakeCmp, requestsToRead, counts)
 
 		initialRequestToRead := <-requestsToRead
-		initialRequestToRead.Left <- RandomString(10, 20)
+		initialRequestToRead.Left <- randomString(10, 20)
 		finalRequestToRead := <-requestsToRead
 		finalRequestToRead.Left <- stop
 
@@ -51,14 +51,14 @@ func TestCounter(t *testing.T) {
 	func() {
 		requestsToRead := make(chan Either, 2)
 		counts := make(chan int, 2)
-		handsWin := RandomString(10, 20)
-		handsLoss := RandomString(10, 20)
+		handsWin := randomString(10, 20)
+		handsLoss := randomString(10, 20)
 		fakeCmp := &mockComparator{}
 		fakeCmp.
-			On("IsFirstPlayerWinner", handsWin).
+			On("isFirstPlayerWinner", handsWin).
 			Return(true, nil).
 			Once().
-			On("IsFirstPlayerWinner", handsLoss).
+			On("isFirstPlayerWinner", handsLoss).
 			Return(false, nil).
 			Once()
 		go counter(fakeCmp, requestsToRead, counts)
@@ -79,19 +79,19 @@ func TestCounter(t *testing.T) {
 }
 
 func TestCountWins(t *testing.T) {
-	log.Println("CountWins")
+	log.Println("countWins")
 
 	log.Println("should fail when it fails to process a hands string")
 	func() {
-		fakeHandsString := RandomString(10, 15)
+		fakeHandsString := randomString(10, 15)
 		fakeScanner := &mockScanner{}
 		fakeScanner.On("Scan").Return(true).Twice()
 		fakeScanner.On("Text").Return(fakeHandsString).Twice()
 
-		msg := RandomString(10, 20)
+		msg := randomString(10, 20)
 		fakeCmp := &mockComparator{}
 		fakeCmp.
-			On("IsFirstPlayerWinner", fakeHandsString).
+			On("isFirstPlayerWinner", fakeHandsString).
 			Return(false, errors.New(msg)).
 			Maybe()
 
@@ -105,20 +105,20 @@ func TestCountWins(t *testing.T) {
 	log.Println("should count the first player's wins")
 	func() {
 		fakeHandsStrings := []string{
-			RandomString(10, 15),
-			RandomString(10, 15),
-			RandomString(10, 15),
+			randomString(10, 15),
+			randomString(10, 15),
+			randomString(10, 15),
 		}
 
 		fakeCmp := &mockComparator{}
 		fakeCmp.
-			On("IsFirstPlayerWinner", fakeHandsStrings[0]).
+			On("isFirstPlayerWinner", fakeHandsStrings[0]).
 			Return(true, nil).
 			Once().
-			On("IsFirstPlayerWinner", fakeHandsStrings[1]).
+			On("isFirstPlayerWinner", fakeHandsStrings[1]).
 			Return(false, nil).
 			Once().
-			On("IsFirstPlayerWinner", fakeHandsStrings[2]).
+			On("isFirstPlayerWinner", fakeHandsStrings[2]).
 			Return(true, nil).
 			Once()
 

@@ -8,8 +8,8 @@ type mockHandsStringParser struct {
 	mock.Mock
 }
 
-// ParseHands provides a mock function with given fields: _a0
-func (_m *mockHandsStringParser) ParseHands(_a0 string) (Hand, Hand, error) {
+// parseHands provides a mock function with given fields: _a0
+func (_m *mockHandsStringParser) parseHands(_a0 string) (Hand, Hand, error) {
 	ret := _m.Called(_a0)
 
 	var r0 Hand

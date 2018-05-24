@@ -8,8 +8,8 @@ type mockCombinationMatcher struct {
 	mock.Mock
 }
 
-// IsFlush provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsFlush(hand Hand) (bool, Hand) {
+// isFlush provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isFlush(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -31,8 +31,8 @@ func (_m *mockCombinationMatcher) IsFlush(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsFourKind provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsFourKind(hand Hand) (bool, Hand) {
+// isFourKind provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isFourKind(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -54,8 +54,8 @@ func (_m *mockCombinationMatcher) IsFourKind(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsFullHouse provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsFullHouse(hand Hand) (bool, Hand) {
+// isFullHouse provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isFullHouse(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -77,8 +77,8 @@ func (_m *mockCombinationMatcher) IsFullHouse(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsOnePair provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsOnePair(hand Hand) (bool, Hand) {
+// isOnePair provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isOnePair(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -100,8 +100,8 @@ func (_m *mockCombinationMatcher) IsOnePair(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsRoyalFlush provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsRoyalFlush(hand Hand) (bool, Hand) {
+// isRoyalFlush provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isRoyalFlush(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -123,8 +123,8 @@ func (_m *mockCombinationMatcher) IsRoyalFlush(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsStraight provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsStraight(hand Hand) (bool, Hand) {
+// isStraight provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isStraight(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -146,8 +146,8 @@ func (_m *mockCombinationMatcher) IsStraight(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsStraightFlush provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsStraightFlush(hand Hand) (bool, Hand) {
+// isStraightFlush provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isStraightFlush(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -169,8 +169,8 @@ func (_m *mockCombinationMatcher) IsStraightFlush(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsThreeKind provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsThreeKind(hand Hand) (bool, Hand) {
+// isThreeKind provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isThreeKind(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool
@@ -192,8 +192,8 @@ func (_m *mockCombinationMatcher) IsThreeKind(hand Hand) (bool, Hand) {
 	return r0, r1
 }
 
-// IsTwoPairs provides a mock function with given fields: hand
-func (_m *mockCombinationMatcher) IsTwoPairs(hand Hand) (bool, Hand) {
+// isTwoPairs provides a mock function with given fields: hand
+func (_m *mockCombinationMatcher) isTwoPairs(hand Hand) (bool, Hand) {
 	ret := _m.Called(hand)
 
 	var r0 bool

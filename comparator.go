@@ -5,7 +5,7 @@ import (
 )
 
 type comparator interface {
-	IsFirstPlayerWinner(hands string) (bool, error)
+	isFirstPlayerWinner(hands string) (bool, error)
 }
 
 type cmp struct {
@@ -14,14 +14,14 @@ type cmp struct {
 	matcher combinationMatcher
 }
 
-func (c cmp) IsFirstPlayerWinner(hands string) (bool, error) {
-	first, second, err := c.parser.ParseHands(hands)
+func (c cmp) isFirstPlayerWinner(hands string) (bool, error) {
+	first, second, err := c.parser.parseHands(hands)
 	if err != nil {
 		return false, err
 	}
 
-	firstCombinationRank, firstReordered := c.GetCombination(first)
-	secondCombinationRank, secondReordered := c.GetCombination(second)
+	firstCombinationRank, firstReordered := c.getCombination(first)
+	secondCombinationRank, secondReordered := c.getCombination(second)
 
 	if firstCombinationRank != secondCombinationRank {
 		return firstCombinationRank < secondCombinationRank, nil
@@ -39,34 +39,34 @@ func (c cmp) IsFirstPlayerWinner(hands string) (bool, error) {
 	return false, nil
 }
 
-func (c cmp) GetCombination(hand Hand) (int, Hand) {
+func (c cmp) getCombination(hand Hand) (int, Hand) {
 	combinationCheckers := []func(Hand) (bool, Hand){
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsRoyalFlush(hand)
+			return c.matcher.isRoyalFlush(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsStraightFlush(hand)
+			return c.matcher.isStraightFlush(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsFourKind(hand)
+			return c.matcher.isFourKind(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsFullHouse(hand)
+			return c.matcher.isFullHouse(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsFlush(hand)
+			return c.matcher.isFlush(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsStraight(hand)
+			return c.matcher.isStraight(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsThreeKind(hand)
+			return c.matcher.isThreeKind(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsTwoPairs(hand)
+			return c.matcher.isTwoPairs(hand)
 		},
 		func(hand Hand) (bool, Hand) {
-			return c.matcher.IsOnePair(hand)
+			return c.matcher.isOnePair(hand)
 		},
 	}
 

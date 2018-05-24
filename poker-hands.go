@@ -19,7 +19,7 @@ type scanner interface {
 }
 
 func main() {
-	resp, errGet := http.Get(Url)
+	resp, errGet := http.Get(combinationsUrl)
 	if errGet != nil {
 		log.Fatalf("Failed to download the combinations: %s\n", errGet)
 	}
@@ -48,7 +48,7 @@ func counter(comparator comparator, requestsToRead chan Either, counts chan int)
 			counts <- count
 			return
 		} else {
-			result, err := comparator.IsFirstPlayerWinner(handsString)
+			result, err := comparator.isFirstPlayerWinner(handsString)
 			if result {
 				count++
 			}

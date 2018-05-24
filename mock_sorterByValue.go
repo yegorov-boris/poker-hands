@@ -8,8 +8,8 @@ type mockSorterByValue struct {
 	mock.Mock
 }
 
-// SortByValue provides a mock function with given fields: _a0
-func (_m *mockSorterByValue) SortByValue(_a0 Hand) Hand {
+// sortByValue provides a mock function with given fields: _a0
+func (_m *mockSorterByValue) sortByValue(_a0 Hand) Hand {
 	ret := _m.Called(_a0)
 
 	var r0 Hand

@@ -11,19 +11,19 @@ import (
 )
 
 var checkerNames = []string{
-	"IsRoyalFlush",
-	"IsStraightFlush",
-	"IsFourKind",
-	"IsFullHouse",
-	"IsFlush",
-	"IsStraight",
-	"IsThreeKind",
-	"IsTwoPairs",
-	"IsOnePair",
+	"isRoyalFlush",
+	"isStraightFlush",
+	"isFourKind",
+	"isFullHouse",
+	"isFlush",
+	"isStraight",
+	"isThreeKind",
+	"isTwoPairs",
+	"isOnePair",
 }
 
 func TestGetCombination(t *testing.T) {
-	log.Println("GetCombination")
+	log.Println("getCombination")
 
 	log.Println("should return the combination index and the reordered hand")
 	func() {
@@ -33,7 +33,7 @@ func TestGetCombination(t *testing.T) {
 			fakeMatcher.On(checkerName, Hand{}).Return(i == expectedIndex, Hand{}).Maybe()
 		}
 
-		actualIndex, actualHand := (cmp{matcher: fakeMatcher}).GetCombination(Hand{})
+		actualIndex, actualHand := (cmp{matcher: fakeMatcher}).getCombination(Hand{})
 		assert.Equal(t, expectedIndex, actualIndex)
 		assert.Equal(t, Hand{}, actualHand)
 		fakeMatcher.AssertExpectations(t)
@@ -46,7 +46,7 @@ func TestGetCombination(t *testing.T) {
 			fakeMatcher.On(checkerName, Hand{}).Return(false, Hand{}).Once()
 		}
 
-		actualIndex, actualHand := (cmp{matcher: fakeMatcher}).GetCombination(Hand{})
+		actualIndex, actualHand := (cmp{matcher: fakeMatcher}).getCombination(Hand{})
 		assert.Equal(t, 9, actualIndex)
 		assert.Equal(t, Hand{}, actualHand)
 		fakeMatcher.AssertExpectations(t)
@@ -54,17 +54,17 @@ func TestGetCombination(t *testing.T) {
 }
 
 func TestIsFirstPlayerWinner(t *testing.T) {
-	log.Println("IsFirstPlayerWinner")
+	log.Println("isFirstPlayerWinner")
 
-	log.Println("should fail when the ParseHands fails")
+	log.Println("should fail when the parseHands fails")
 	func() {
-		msg := RandomString(10, 20)
+		msg := randomString(10, 20)
 		fakeParser := &mockHandsStringParser{}
-		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+		fakeParser.On("parseHands", mock.AnythingOfType("string")).
 			Return(Hand{}, Hand{}, errors.New(msg)).
 			Once()
 
-		_, err := (cmp{parser: fakeParser}).IsFirstPlayerWinner(RandomString(30, 50))
+		_, err := (cmp{parser: fakeParser}).isFirstPlayerWinner(randomString(30, 50))
 		assert.Errorf(t, err, msg)
 		fakeParser.AssertExpectations(t)
 	}()
@@ -74,7 +74,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 		firstHand := Hand{Card{Value: "first"}}
 		secondHand := Hand{Card{Value: "second"}}
 		fakeParser := &mockHandsStringParser{}
-		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+		fakeParser.On("parseHands", mock.AnythingOfType("string")).
 			Return(firstHand, secondHand, nil).
 			Once()
 
@@ -96,7 +96,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 			matcher: fakeMatcher,
 		}
 
-		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
+		actual, err := fakeComparator.isFirstPlayerWinner(randomString(20, 30))
 		assert.Nil(t, err)
 		assert.True(t, actual)
 		fakeParser.AssertExpectations(t)
@@ -108,7 +108,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 		firstHand := Hand{Card{Value: "first"}}
 		secondHand := Hand{Card{Value: "second"}}
 		fakeParser := &mockHandsStringParser{}
-		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+		fakeParser.On("parseHands", mock.AnythingOfType("string")).
 			Return(firstHand, secondHand, nil).
 			Once()
 
@@ -130,7 +130,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 			matcher: fakeMatcher,
 		}
 
-		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
+		actual, err := fakeComparator.isFirstPlayerWinner(randomString(20, 30))
 		assert.Nil(t, err)
 		assert.False(t, actual)
 		fakeParser.AssertExpectations(t)
@@ -140,15 +140,15 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 	log.Println("should return true when the combinations have equal ranks ",
 		"but the first player's cards are stronger")
 	func() {
-		firstValue := RandomStringWithout(1, 1, " ")
-		secondValue := RandomStringWithout(1, 1, strings.Join([]string{" ", firstValue}, ""))
+		firstValue := randomStringWithout(1, 1, " ")
+		secondValue := randomStringWithout(1, 1, strings.Join([]string{" ", firstValue}, ""))
 		position := rand.Intn(5)
 		firstHand := Hand{}
 		firstHand[position].Value = firstValue
 		secondHand := Hand{}
 		secondHand[position].Value = secondValue
 		fakeParser := &mockHandsStringParser{}
-		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+		fakeParser.On("parseHands", mock.AnythingOfType("string")).
 			Return(firstHand, secondHand, nil).
 			Once()
 
@@ -171,7 +171,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 			matcher: fakeMatcher,
 		}
 
-		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
+		actual, err := fakeComparator.isFirstPlayerWinner(randomString(20, 30))
 		assert.Nil(t, err)
 		assert.True(t, actual)
 		fakeParser.AssertExpectations(t)
@@ -181,15 +181,15 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 	log.Println("should return false when the combinations have equal ranks ",
 		"but the first player's cards are not stronger")
 	func() {
-		firstValue := RandomStringWithout(1, 1, " ")
-		secondValue := RandomStringWithout(1, 1, strings.Join([]string{" ", firstValue}, ""))
+		firstValue := randomStringWithout(1, 1, " ")
+		secondValue := randomStringWithout(1, 1, strings.Join([]string{" ", firstValue}, ""))
 		position := rand.Intn(5)
 		firstHand := Hand{}
 		firstHand[position].Value = firstValue
 		secondHand := Hand{}
 		secondHand[position].Value = secondValue
 		fakeParser := &mockHandsStringParser{}
-		fakeParser.On("ParseHands", mock.AnythingOfType("string")).
+		fakeParser.On("parseHands", mock.AnythingOfType("string")).
 			Return(firstHand, secondHand, nil).
 			Once()
 
@@ -212,7 +212,7 @@ func TestIsFirstPlayerWinner(t *testing.T) {
 			matcher: fakeMatcher,
 		}
 
-		actual, err := fakeComparator.IsFirstPlayerWinner(RandomString(20, 30))
+		actual, err := fakeComparator.isFirstPlayerWinner(randomString(20, 30))
 		assert.Nil(t, err)
 		assert.False(t, actual)
 		fakeParser.AssertExpectations(t)

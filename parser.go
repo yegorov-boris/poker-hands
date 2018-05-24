@@ -7,19 +7,19 @@ import (
 )
 
 type handsStringSplitter interface {
-	SplitHandsString(string) ([]string, error)
+	splitHandsString(string) ([]string, error)
 }
 
 type sorterByValue interface {
-	SortByValue(Hand) Hand
+	sortByValue(Hand) Hand
 }
 
 type cardStringParser interface {
-	ParseCardString(string) (Card, error)
+	parseCardString(string) (Card, error)
 }
 
 type handsStringParser interface {
-	ParseHands(string) (Hand, Hand, error)
+	parseHands(string) (Hand, Hand, error)
 }
 
 type splitter struct {
@@ -40,7 +40,7 @@ type handsParser struct {
 	sorter     sorterByValue
 }
 
-func (s splitter) SplitHandsString(hands string) ([]string, error) {
+func (s splitter) splitHandsString(hands string) ([]string, error) {
 	cardStrings := strings.Split(hands, s.config.separator)
 	if len(cardStrings) != 10 {
 		return cardStrings, errors.New("failed to parse a line with hands: wrong length")
@@ -49,7 +49,7 @@ func (s splitter) SplitHandsString(hands string) ([]string, error) {
 	return cardStrings, nil
 }
 
-func (p cardParser) ParseCardString(cardString string) (Card, error) {
+func (p cardParser) parseCardString(cardString string) (Card, error) {
 	length := len(cardString)
 
 	if length != 2 {
@@ -69,7 +69,7 @@ func (p cardParser) ParseCardString(cardString string) (Card, error) {
 	return Card{Suit: suit, Value: value}, nil
 }
 
-func (s sorter) SortByValue(hand Hand) Hand {
+func (s sorter) sortByValue(hand Hand) Hand {
 	sortedCardsCount := 0
 	for _, value := range strings.Split(s.config.cardValues, s.config.separator) {
 		i := sortedCardsCount
@@ -88,9 +88,9 @@ func (s sorter) SortByValue(hand Hand) Hand {
 	return hand
 }
 
-func (p handsParser) ParseHands(hands string) (Hand, Hand, error) {
+func (p handsParser) parseHands(hands string) (Hand, Hand, error) {
 	var first, second Hand
-	cardStrings, err := p.splitter.SplitHandsString(hands)
+	cardStrings, err := p.splitter.splitHandsString(hands)
 	if err != nil {
 		return Hand{}, Hand{}, err
 	}
@@ -100,7 +100,7 @@ func (p handsParser) ParseHands(hands string) (Hand, Hand, error) {
 			return Hand{}, Hand{}, fmt.Errorf("failed to parse a line with hands: %s is not unique", cardString)
 		}
 
-		card, err := p.cardParser.ParseCardString(cardString)
+		card, err := p.cardParser.parseCardString(cardString)
 		if err != nil {
 			return Hand{}, Hand{}, err
 		}
@@ -112,5 +112,5 @@ func (p handsParser) ParseHands(hands string) (Hand, Hand, error) {
 		}
 
 	}
-	return p.sorter.SortByValue(first), p.sorter.SortByValue(second), nil
+	return p.sorter.sortByValue(first), p.sorter.sortByValue(second), nil
 }

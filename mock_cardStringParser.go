@@ -8,8 +8,8 @@ type mockCardStringParser struct {
 	mock.Mock
 }
 
-// ParseCardString provides a mock function with given fields: _a0
-func (_m *mockCardStringParser) ParseCardString(_a0 string) (Card, error) {
+// parseCardString provides a mock function with given fields: _a0
+func (_m *mockCardStringParser) parseCardString(_a0 string) (Card, error) {
 	ret := _m.Called(_a0)
 
 	var r0 Card
